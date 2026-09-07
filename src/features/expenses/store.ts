@@ -10,6 +10,7 @@ import type {
   Revision,
   SaveResult,
   Settlement,
+  SettlementInput,
 } from '../../backend/ports.ts';
 import { toUiError, type UiError } from '../spaces/store.ts';
 
@@ -40,6 +41,12 @@ interface ExpensesState {
   revisions: (id: string) => Promise<Revision[]>;
   createCategory: (input: CategoryInput) => Promise<Category | null>;
   archiveCategory: (id: string, archived: boolean) => Promise<boolean>;
+  /** Déclarer un remboursement : une note partagée, jamais un transfert. */
+  recordSettlement: (input: SettlementInput) => Promise<Settlement | null>;
+  cancelSettlement: (
+    id: string,
+    expectedVersion: number
+  ) => Promise<Settlement | null>;
   clearError: () => void;
 }
 
@@ -178,6 +185,28 @@ export const useExpenses = create<ExpensesState>((set, get) => {
         if (categories) set({ categories });
       }
       return true;
+    },
+
+    async recordSettlement(input) {
+      const settlement = await attempt('déclaration d’un remboursement', () =>
+        backend.settlements.record(input)
+      );
+      if (settlement) set({ settlements: [settlement, ...get().settlements] });
+      return settlement;
+    },
+
+    async cancelSettlement(id, expectedVersion) {
+      const settlement = await attempt('annulation d’un remboursement', () =>
+        backend.settlements.cancel(id, expectedVersion)
+      );
+      if (settlement) {
+        set({
+          settlements: get().settlements.map(s =>
+            s.id === settlement.id ? settlement : s
+          ),
+        });
+      }
+      return settlement;
     },
 
     clearError() {
