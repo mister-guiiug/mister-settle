@@ -54,6 +54,9 @@ test.describe('@critical le cadre', () => {
       'À renommer'
     );
 
+    // Dans un espace, « Réglages » vit sous « Plus » : la barre basse
+    // replie ce qui dépasse ses cinq places.
+    await page.getByRole('button', { name: 'Plus' }).click();
     await page.getByRole('link', { name: 'Réglages' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Réglages de l’espace'
