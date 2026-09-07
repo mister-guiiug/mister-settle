@@ -14,6 +14,7 @@ import {
   Settings,
   SlidersHorizontal,
   UserRound,
+  Users,
 } from 'lucide-react';
 import { AppHeader } from '@mister-guiiug/dev-pwa-config/react/app-header';
 import { PageContainer } from '@mister-guiiug/dev-pwa-config/react/page-container';
@@ -61,6 +62,16 @@ const AboutScreen = lazy(() =>
 const AccountScreen = lazy(() =>
   import('./features/account/AccountScreen.tsx').then(m => ({
     default: m.AccountScreen,
+  }))
+);
+const ParticipantsScreen = lazy(() =>
+  import('./features/people/ParticipantsScreen.tsx').then(m => ({
+    default: m.ParticipantsScreen,
+  }))
+);
+const GroupsScreen = lazy(() =>
+  import('./features/people/GroupsScreen.tsx').then(m => ({
+    default: m.GroupsScreen,
   }))
 );
 
@@ -118,6 +129,11 @@ function Shell() {
           end: true,
         },
         {
+          href: `/e/${spaceId}/personnes`,
+          label: t('nav.people'),
+          icon: <Users aria-hidden="true" />,
+        },
+        {
           href: `/e/${spaceId}/reglages`,
           label: t('nav.settings'),
           icon: <SlidersHorizontal aria-hidden="true" />,
@@ -131,6 +147,9 @@ function Shell() {
     if (matchPath('/reglages', pathname)) return t('settings.title');
     if (matchPath('/compte', pathname)) return t('account.title');
     if (matchPath('/a-propos', pathname)) return t('about.title');
+    if (matchPath('/e/:spaceId/personnes', pathname)) return t('people.title');
+    if (matchPath('/e/:spaceId/regroupements', pathname))
+      return t('groups.title');
     if (matchPath('/e/:spaceId/reglages', pathname))
       return t('spaceSettings.title');
     if (spaceId) return space?.name ?? t('nav.dashboard');
@@ -169,6 +188,8 @@ function Shell() {
             <Route path="/espaces/nouveau" element={<NewSpaceScreen />} />
             <Route path="/e/:spaceId" element={<SpaceShell />}>
               <Route index element={<SpaceDashboardScreen />} />
+              <Route path="personnes" element={<ParticipantsScreen />} />
+              <Route path="regroupements" element={<GroupsScreen />} />
               <Route path="reglages" element={<SpaceSettingsScreen />} />
             </Route>
             <Route path="/reglages" element={<SettingsScreen />} />
