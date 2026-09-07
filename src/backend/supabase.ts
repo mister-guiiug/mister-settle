@@ -31,8 +31,26 @@ export const supabase = createSupabaseClientFactory<SupabaseLike>({
 });
 
 /** Le strict nécessaire du client, pour ne pas figer une version du SDK. */
-interface SupabaseLike {
-  auth: { getUser(): Promise<{ data: { user: { id: string } | null } }> };
+export interface SupabaseLike {
+  auth: {
+    getUser(): Promise<{ data: { user: { id: string } | null } }>;
+    /**
+     * `scope` EST OBLIGATOIRE ICI, et c'est tout l'intérêt de le déclarer.
+     * Une déconnexion « globale » demande au serveur de révoquer les jetons —
+     * ce qu'il refuse quand le compte vient d'être effacé, puisque
+     * l'utilisateur n'existe plus. `'local'` efface la session sur l'appareil
+     * sans rien demander à personne : c'est la seule qui puisse suivre une
+     * suppression de compte.
+     */
+    signOut(options: { scope: 'local' | 'global' }): Promise<{
+      error: { message: string } | null;
+    }>;
+  };
+  /** Appel d'une fonction Postgres exposée par PostgREST (`security definer`). */
+  rpc(
+    fn: string,
+    args?: Record<string, unknown>
+  ): Promise<{ error: { message: string } | null }>;
   from(table: string): {
     select(columns: string): {
       order(

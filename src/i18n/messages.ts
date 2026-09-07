@@ -22,7 +22,7 @@
 const fr = {
   app: {
     name: 'Mister Settle',
-    tagline: 'Le squelette de la famille, prêt à cloner.',
+    tagline: 'Qui a payé, qui doit combien — sans toucher à l’argent.',
   },
   nav: {
     home: 'Accueil',
@@ -39,11 +39,18 @@ const fr = {
     field: 'Nouvelle note',
     placeholder: 'Ce que je ne veux pas oublier',
     remove: 'Supprimer',
-    removeConfirm: 'Supprimer cette note ?',
-    removeBody: 'Elle ne sera pas récupérable.',
+    removed: 'Note supprimée',
+    undo: 'Annuler',
     count: {
       one: '{count} note',
       other: '{count} notes',
+    },
+    sync: {
+      refused: {
+        one: '{count} écriture refusée par la base : {error}',
+        other: '{count} écritures refusées par la base : {error}',
+      },
+      retry: 'Réessayer',
     },
   },
   settings: {
@@ -82,11 +89,22 @@ const fr = {
     linkAgain: 'Recevoir un autre lien',
     usePassword: 'Se connecter avec un mot de passe',
     useLink: 'Recevoir un lien plutôt',
+    danger: {
+      title: 'Zone dangereuse',
+      body: 'Supprimer votre compte efface vos notes, votre profil et le compte lui-même. Rien n’est conservé, et cette action ne s’annule pas.',
+      action: 'Supprimer mon compte',
+      confirmLabel: 'Retapez votre adresse pour confirmer',
+      confirmHint: 'L’adresse du compte est {email}.',
+      confirm: 'Supprimer définitivement',
+      cancel: 'Annuler',
+      mismatch: 'L’adresse saisie ne correspond pas : rien n’a été supprimé.',
+      failed: 'La suppression a échoué : {error}',
+    },
   },
 
   about: {
     title: 'À propos',
-    what: "Ce dépôt est le point de départ des applications de la famille. Il n'a pas de métier : il a le cadre.",
+    what: 'Mister Settle répartit les dépenses d’un groupe — voyage, colocation, famille — et calcule qui doit quoi à qui. Les remboursements se font en dehors de l’application : elle ne manipule jamais d’argent.',
     version: 'Version',
   },
 };
@@ -94,7 +112,7 @@ const fr = {
 const en: typeof fr = {
   app: {
     name: 'Mister Settle',
-    tagline: 'The family skeleton, ready to clone.',
+    tagline: 'Who paid, who owes what — without touching the money.',
   },
   nav: {
     home: 'Home',
@@ -111,11 +129,18 @@ const en: typeof fr = {
     field: 'New note',
     placeholder: "What I don't want to forget",
     remove: 'Delete',
-    removeConfirm: 'Delete this note?',
-    removeBody: 'It cannot be recovered.',
+    removed: 'Note deleted',
+    undo: 'Undo',
     count: {
       one: '{count} note',
       other: '{count} notes',
+    },
+    sync: {
+      refused: {
+        one: '{count} write refused by the database: {error}',
+        other: '{count} writes refused by the database: {error}',
+      },
+      retry: 'Retry',
     },
   },
   settings: {
@@ -154,11 +179,22 @@ const en: typeof fr = {
     linkAgain: 'Send another link',
     usePassword: 'Sign in with a password',
     useLink: 'Send me a link instead',
+    danger: {
+      title: 'Danger zone',
+      body: 'Deleting your account erases your notes, your profile and the account itself. Nothing is kept, and this cannot be undone.',
+      action: 'Delete my account',
+      confirmLabel: 'Type your address again to confirm',
+      confirmHint: 'The account address is {email}.',
+      confirm: 'Delete permanently',
+      cancel: 'Cancel',
+      mismatch: 'The address does not match: nothing was deleted.',
+      failed: 'Deletion failed: {error}',
+    },
   },
 
   about: {
     title: 'About',
-    what: 'This repository is the starting point for the family applications. It has no domain: it has the frame.',
+    what: 'Mister Settle splits a group’s expenses — a trip, a flat share, a family — and works out who owes what to whom. Repayments happen outside the app: it never handles money.',
     version: 'Version',
   },
 };

@@ -9,26 +9,30 @@ import { Home, Info, Settings, UserRound } from 'lucide-react';
 import { AppHeader } from '@mister-guiiug/dev-pwa-config/react/app-header';
 import { PageContainer } from '@mister-guiiug/dev-pwa-config/react/page-container';
 import { BottomNav } from '@mister-guiiug/dev-pwa-config/react/bottom-nav';
-import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
 import { ThemeToggle } from '@mister-guiiug/dev-pwa-config/react/theme-toggle';
 import { ObservabilityBoundary } from '@mister-guiiug/dev-pwa-config/react/error-boundary';
 import { ConnectionBanner } from '@mister-guiiug/dev-pwa-config/react/connection-banner';
 import { AppUpdates } from '@mister-guiiug/dev-pwa-config/react/app-updates';
 import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
-import { REPO_URL } from './app/links.ts';
 import { HomeScreen } from './features/home/HomeScreen.tsx';
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx';
 import { AboutScreen } from './features/about/AboutScreen.tsx';
 import { AccountScreen } from './features/account/AccountScreen.tsx';
 
 /**
- * LE CADRE : en-tête, contenu borné, barre basse, pied de page.
+ * LE CADRE : en-tête, contenu borné, barre basse.
  *
- * Les quatre côtés viennent du socle. Neuf apps avaient écrit leur en-tête (de
+ * Les trois côtés viennent du socle. Neuf apps avaient écrit leur en-tête (de
  * 36 à 377 lignes) et la mise en page était la même partout — seul le CONTENU
  * différait. `AppHeader` ne décide rien de ce contenu : il pose le collant, la
  * zone sûre iOS, le titre en `h1` et la rangée d'actions.
+ *
+ * LE PIED DE PAGE N'EST PAS ICI, ET C'EST LA RÈGLE. Rendu dans la coquille,
+ * hors des routes, `<AppFooter>` suivait chaque écran — trois liens sortants
+ * sous une saisie. La règle famille du 06/09/2026 le veut sur deux écrans, et
+ * deux seulement : l'accueil et À propos — c'est là qu'il est rendu, une ligne
+ * dans chacun. `pwa-doctor` (`liens-famille`) refuse la coquille depuis.
  *
  * `linkComponent={Link}` avec `hrefProp="to"` : les composants de navigation
  * sont agnostiques de routeur, et c'est ainsi qu'on leur donne celui de l'app.
@@ -100,13 +104,6 @@ function Shell() {
               d'erreur avant que ce routeur n'existe. */}
           <Route path="*" element={<HomeScreen />} />
         </Routes>
-
-        {/* Le lien de soutien n'est pas passé : `AppFooter` le prend au
-            catalogue de la famille, source unique du pseudo. `issues` ajoute
-            « Signaler un problème » : le gabarit `bug.yml` du compte, prérempli
-            avec la version, le commit, l'écran et le navigateur — ce qu'un
-            rapport n'a jamais quand on le demande après coup. */}
-        <AppFooter repoUrl={REPO_URL} issues />
       </PageContainer>
 
       <BottomNav

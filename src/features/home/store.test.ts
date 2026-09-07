@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useNotes } from './store.ts';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { UNDO_MS, useNotes } from './store.ts';
 import { notesStore } from '../../backend/local.ts';
 import { backend } from '../../backend/index.ts';
 
@@ -16,7 +16,14 @@ describe('le magasin de notes', () => {
   beforeEach(async () => {
     localStorage.clear();
     notesStore.clear();
-    useNotes.setState({ notes: [], ready: false, error: null });
+    useNotes.setState({ notes: [], ready: false, error: null, pending: null });
+  });
+
+  // Une minuterie de sursis armée par un test ne doit pas se déclencher
+  // pendant le suivant : `commitRemove` ne ferait rien (il vérifie que le
+  // sursis est bien le sien), mais l'horloge simulée, elle, resterait.
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('ajoute une note, la plus récente en tête', async () => {
@@ -50,15 +57,111 @@ describe('le magasin de notes', () => {
     expect(useNotes.getState().ready).toBe(true);
   });
 
-  it('retire la note demandée, et elle seule', async () => {
+  it('retire la note demandée, et elle seule — mais seulement après le sursis', async () => {
+    vi.useFakeTimers();
     await useNotes.getState().add('à garder');
     await useNotes.getState().add('à retirer');
     const cible = useNotes.getState().notes[0];
     expect(cible).toBeDefined();
 
-    await useNotes.getState().remove(cible!.id);
+    useNotes.getState().remove(cible!.id);
 
+    // L'écran a perdu la note tout de suite — c'est ce qui rend le geste
+    // lisible : on VOIT le résultat avant d'avoir à se décider.
     expect(useNotes.getState().notes.map(n => n.text)).toEqual(['à garder']);
+    // La base, elle, ne sait encore rien. C'est tout l'objet du sursis.
+    expect((await backend.notes.load()).notes).toHaveLength(2);
+
+    await vi.advanceTimersByTimeAsync(UNDO_MS);
+
+    expect((await backend.notes.load()).notes.map(n => n.text)).toEqual([
+      'à garder',
+    ]);
+    expect(useNotes.getState().pending).toBeNull();
+  });
+
+  it('annulée, la note revient À SA PLACE et rien n’a été écrit', async () => {
+    vi.useFakeTimers();
+    const efface = vi.spyOn(backend.notes, 'remove');
+    await useNotes.getState().add('première');
+    await useNotes.getState().add('deuxième');
+    await useNotes.getState().add('troisième');
+    // La plus récente en tête : [troisième, deuxième, première].
+    const milieu = useNotes.getState().notes[1]!;
+
+    useNotes.getState().remove(milieu.id);
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual([
+      'troisième',
+      'première',
+    ]);
+
+    useNotes.getState().undoRemove(milieu.id);
+
+    // AU MILIEU, pas en tête : une annulation qui remet la note ailleurs
+    // qu'où elle était n'annule pas, elle déplace.
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual([
+      'troisième',
+      'deuxième',
+      'première',
+    ]);
+
+    // Et le sursis désarmé n'écrit rien, même longtemps après.
+    await vi.advanceTimersByTimeAsync(UNDO_MS * 3);
+    expect(efface).not.toHaveBeenCalled();
+    expect((await backend.notes.load()).notes).toHaveLength(3);
+    efface.mockRestore();
+  });
+
+  it('une seconde suppression SOLDE la première au lieu de l’oublier', async () => {
+    // Le défaut que cette règle évite : un sursis abandonné ne serait jamais
+    // écrit. L'écran aurait perdu la note, la base l'aurait gardée, et elle
+    // réapparaîtrait au prochain chargement sans explication.
+    vi.useFakeTimers();
+    await useNotes.getState().add('une');
+    await useNotes.getState().add('deux');
+    const [deux, une] = useNotes.getState().notes;
+
+    useNotes.getState().remove(deux!.id);
+    useNotes.getState().remove(une!.id);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect((await backend.notes.load()).notes.map(n => n.text)).toEqual([
+      'une',
+    ]);
+
+    // Seul le DERNIER geste reste annulable — celui qu'on regrette.
+    useNotes.getState().undoRemove(une!.id);
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual(['une']);
+  });
+
+  it('quitter l’écran solde le sursis, il n’en reste aucun en suspens', async () => {
+    await useNotes.getState().add('partie');
+    const cible = useNotes.getState().notes[0]!;
+
+    useNotes.getState().remove(cible.id);
+    await useNotes.getState().flushRemovals();
+
+    expect(useNotes.getState().pending).toBeNull();
+    expect((await backend.notes.load()).notes).toEqual([]);
+  });
+
+  it('rend la note à SA PLACE quand la suppression est refusée', async () => {
+    await useNotes.getState().add('première');
+    await useNotes.getState().add('deuxième');
+    const derniere = useNotes.getState().notes[1]!;
+    const echec = vi
+      .spyOn(backend.notes, 'remove')
+      .mockRejectedValueOnce(new Error('refus de la base'));
+
+    useNotes.getState().remove(derniere.id);
+    await useNotes.getState().flushRemovals();
+
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual([
+      'deuxième',
+      'première',
+    ]);
+    expect(useNotes.getState().error).toBe('refus de la base');
+    echec.mockRestore();
   });
 
   it('efface tout, magasin compris', async () => {
@@ -100,7 +203,8 @@ describe('le magasin de notes', () => {
       expect.objectContaining({ id: ajoutee!.id, text: 'une' })
     );
 
-    await useNotes.getState().remove(ajoutee!.id);
+    useNotes.getState().remove(ajoutee!.id);
+    await useNotes.getState().flushRemovals();
     expect(remove).toHaveBeenCalledWith(ajoutee!.id);
 
     add.mockRestore();
