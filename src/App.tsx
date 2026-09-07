@@ -10,6 +10,7 @@ import {
 import {
   Home,
   Info,
+  Activity,
   ArrowLeftRight,
   Receipt,
   Scale,
@@ -111,6 +112,11 @@ const AcceptInvitationScreen = lazy(() =>
     default: m.AcceptInvitationScreen,
   }))
 );
+const ActivityScreen = lazy(() =>
+  import('./features/activity/ActivityScreen.tsx').then(m => ({
+    default: m.ActivityScreen,
+  }))
+);
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -179,6 +185,13 @@ function Shell() {
           label: t('nav.settle'),
           icon: <ArrowLeftRight aria-hidden="true" />,
         },
+        // Au-delà de cinq entrées, la barre du socle replie la suite sous
+        // « Plus » : l'activité et les réglages y vivent.
+        {
+          href: `/e/${spaceId}/activite`,
+          label: t('nav.activity'),
+          icon: <Activity aria-hidden="true" />,
+        },
         {
           href: `/e/${spaceId}/reglages`,
           label: t('nav.settings'),
@@ -205,6 +218,7 @@ function Shell() {
     if (matchPath('/invitation/:token', pathname)) return t('accept.title');
     if (matchPath('/e/:spaceId/invitations', pathname))
       return t('invitations.title');
+    if (matchPath('/e/:spaceId/activite', pathname)) return t('activity.title');
     if (matchPath('/e/:spaceId/soldes', pathname)) return t('balances.title');
     if (matchPath('/e/:spaceId/remboursements', pathname))
       return t('settlements.title');
@@ -275,6 +289,7 @@ function Shell() {
               />
               <Route path="soldes" element={<BalancesScreen />} />
               <Route path="remboursements" element={<SettlementsScreen />} />
+              <Route path="activite" element={<ActivityScreen />} />
               <Route path="personnes" element={<ParticipantsScreen />} />
               <Route path="regroupements" element={<GroupsScreen />} />
               <Route path="reglages" element={<SpaceSettingsScreen />} />
@@ -296,6 +311,7 @@ function Shell() {
 
       <BottomNav
         items={spaceNav}
+        moreLabel={t('nav.more')}
         linkComponent={Link}
         hrefProp="to"
         placement="fixed"
