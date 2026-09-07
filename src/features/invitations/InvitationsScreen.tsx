@@ -137,7 +137,7 @@ export function InvitationsScreen() {
             {t('invitations.empty')}
           </p>
         ) : (
-          <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+          <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0 text-sm">
             {invitations.map(invitation => {
               const state = invitationState(invitation);
               return (

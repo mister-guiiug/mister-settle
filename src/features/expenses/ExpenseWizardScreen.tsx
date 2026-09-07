@@ -188,6 +188,14 @@ function Wizard({
   });
   const [form, setFormState] = useState(initial);
   const [step, setStep] = useState<Step>(mode === 'split' ? 3 : 1);
+  // D'où vient le pas affiché : l'animation d'entrée le lit pour glisser du
+  // bon côté. C'est un état de RENDU (il doit être posé avant que le nouveau
+  // pas ne s'affiche), pas une référence mise à jour après coup.
+  const [direction, setDirection] = useState<'avant' | 'arriere'>('avant');
+  const goToStep = (target: Step) => {
+    setDirection(target > step ? 'avant' : 'arriere');
+    setStep(target);
+  };
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState(false);
 
@@ -289,12 +297,12 @@ function Wizard({
         setTouched(true);
         return;
       }
-      setStep(2);
+      goToStep(2);
     } else if (step === 2) {
-      setStep(3);
+      goToStep(3);
     }
   };
-  const previous = () => setStep(step === 3 ? 2 : 1);
+  const previous = () => goToStep(step === 3 ? 2 : 1);
   const cancelHref = source ? `${listPath}/${source.id}` : listPath;
   const cancel = () => {
     if (isNew) clearDraft(space.id);
@@ -309,36 +317,44 @@ function Wizard({
         })}
       </p>
 
-      {step === 1 ? (
-        <StepWhat
-          form={form}
-          setForm={setForm}
-          space={space}
-          categories={categories}
-          touched={touched}
-        />
-      ) : step === 2 ? (
-        <StepWho
-          form={form}
-          setForm={setForm}
-          ctx={ctx}
-          space={space}
-          participants={participants}
-          groups={groups}
-        />
-      ) : (
-        <StepSummary
-          form={form}
-          ctx={ctx}
-          space={space}
-          participants={participants}
-          groups={groups}
-          categories={categories}
-          issues={issues}
-          impact={impact}
-          validationChanged={originalFingerprint === null ? null : changed}
-        />
-      )}
+      {/*
+        LE PAS GLISSE DU CÔTÉ D'OÙ IL VIENT. La `key` fait renaître l'élément à
+        chaque changement de pas, ce qui (re)part l'animation CSS ; `data-sens`
+        lui dit de quel côté. Le formulaire, lui, vit dans cet écran-ci : rien
+        n'est perdu au remplacement.
+      */}
+      <div key={step} className="settle-pas" data-sens={direction}>
+        {step === 1 ? (
+          <StepWhat
+            form={form}
+            setForm={setForm}
+            space={space}
+            categories={categories}
+            touched={touched}
+          />
+        ) : step === 2 ? (
+          <StepWho
+            form={form}
+            setForm={setForm}
+            ctx={ctx}
+            space={space}
+            participants={participants}
+            groups={groups}
+          />
+        ) : (
+          <StepSummary
+            form={form}
+            ctx={ctx}
+            space={space}
+            participants={participants}
+            groups={groups}
+            categories={categories}
+            issues={issues}
+            impact={impact}
+            validationChanged={originalFingerprint === null ? null : changed}
+          />
+        )}
+      </div>
 
       {error ? <ErrorBanner message={<ErrorMessage error={error} />} /> : null}
 

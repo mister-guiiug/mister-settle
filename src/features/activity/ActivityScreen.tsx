@@ -82,7 +82,7 @@ export function ActivityScreen() {
       ) : entries.length === 0 ? (
         <EmptyState title={t('activity.empty')} />
       ) : (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
           {entries.map(entry => (
             <li key={entry.id}>
               <Card>

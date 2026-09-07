@@ -330,24 +330,30 @@ function reasonLabel(
   return isReason(reason) ? t(`expense.reasons.${reason}`) : reason;
 }
 
+/*
+ * LA PASTILLE BAT QUAND LE STATUT CHANGE. La `key` porte le statut : à la
+ * validation, React remplace l'élément au lieu d'en changer le texte, et
+ * l'animation d'entrée repart. Sans elle, valider une dépense ne changerait
+ * qu'un mot dans un coin de l'écran, sans accusé de réception.
+ */
 function StatusBadge({ expense }: { expense: Expense }) {
   const { t } = useI18n();
   if (expense.status === 'draft') {
     return (
-      <Badge tone="warning" size="sm">
+      <Badge key="draft" tone="warning" size="sm" className="settle-pastille">
         {t('expenses.draft')}
       </Badge>
     );
   }
   if (expense.status === 'archived') {
     return (
-      <Badge tone="muted" size="sm">
+      <Badge key="archived" tone="muted" size="sm" className="settle-pastille">
         {t('expenses.archived')}
       </Badge>
     );
   }
   return (
-    <Badge tone="success" size="sm">
+    <Badge key="validated" tone="success" size="sm" className="settle-pastille">
       {t('expenses.validated')}
     </Badge>
   );

@@ -106,7 +106,7 @@ export function ParticipantsScreen() {
           description={t('people.emptyHint')}
         />
       ) : (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
           {active.map(participant => (
             <li key={participant.id}>
               <Card className="flex items-center gap-3">
