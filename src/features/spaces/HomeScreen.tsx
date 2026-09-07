@@ -8,8 +8,10 @@ import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
+import { useAuthContext } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { useI18n } from '../../i18n/index.ts';
 import { REPO_URL } from '../../app/links.ts';
+import { isRemote } from '../../backend/index.ts';
 import type { Space } from '../../backend/ports.ts';
 import { useSpaces } from './store.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
@@ -17,24 +19,49 @@ import { ErrorMessage } from '../../components/ErrorMessage.tsx';
 /**
  * L'ACCUEIL : mes espaces, ouverts d'abord, archivés dessous.
  *
+ * Avec une base partagée et SANS SESSION, il n'y a rien à lister — la base
+ * refuserait, et « pas le droit » n'est pas un accueil. On invite à se
+ * connecter, et on ne demande rien à la base avant.
+ *
  * C'est l'un des deux écrans qui portent le pied de page de la famille (règle
  * du 06/09/2026, contrôlée par `pwa-doctor`) — l'autre est « À propos ».
  */
 export function HomeScreen() {
   const { t, m, fmt } = useI18n();
+  const { signedIn, ready: authReady } = useAuthContext();
   const spaces = useSpaces(state => state.spaces);
   const ready = useSpaces(state => state.ready);
   const error = useSpaces(state => state.error);
   const load = useSpaces(state => state.load);
   const navigate = useNavigate();
   const createSpace = () => void navigate('/espaces/nouveau');
+  const needsSignIn = isRemote && authReady && !signedIn;
+  const canLoad = !isRemote || (authReady && signedIn);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (canLoad) void load();
+  }, [canLoad, load]);
 
   const open = spaces.filter(s => !s.archivedAt);
   const archived = spaces.filter(s => s.archivedAt);
+
+  if (needsSignIn) {
+    return (
+      <>
+        <EmptyState
+          title={t('spaces.signInTitle')}
+          description={t('spaces.signInBody')}
+          className="mt-8"
+          action={
+            <Link to="/compte" className="no-underline">
+              <Button variant="primary">{t('spaces.signInAction')}</Button>
+            </Link>
+          }
+        />
+        <AppFooter repoUrl={REPO_URL} issues className="mt-8" />
+      </>
+    );
+  }
 
   return (
     <>
