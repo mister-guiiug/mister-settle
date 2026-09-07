@@ -22,7 +22,7 @@
     "test:e2e": "playwright test",
     "type-check": "tsc -b",
     "doctor": "pwa-doctor",
-    "icons": "pwa-icons --source public/favicon.svg --out public --maskable",
+    "icons": "pwa-icons --source public/favicon.svg --out public --maskable --bg 15,17,21",
     "prepare": "husky || true",
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
