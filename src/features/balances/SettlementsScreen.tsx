@@ -121,7 +121,7 @@ export function SettlementsScreen() {
             {t('settlements.nothing')}
           </p>
         ) : (
-          <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+          <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0 text-sm">
             {transfers.map(transfer => (
               <li
                 key={`${transfer.fromParticipantId}:${transfer.toParticipantId}`}
@@ -185,7 +185,7 @@ export function SettlementsScreen() {
             {t('settlements.none')}
           </p>
         ) : (
-          <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+          <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0 text-sm">
             {settlements.map(settlement => (
               <SettlementRow
                 key={settlement.id}

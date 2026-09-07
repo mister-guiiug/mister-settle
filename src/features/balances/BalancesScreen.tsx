@@ -147,7 +147,7 @@ export function BalancesScreen() {
             }
           />
           {view === 'people' ? (
-            <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
               {visible.map(p => personRow(byId.get(p.id) as BalanceLine))}
             </ul>
           ) : groupLines.length === 0 ? (
@@ -159,7 +159,7 @@ export function BalancesScreen() {
               <p className="m-0 text-xs" style={soft}>
                 {t('balances.groupHint')}
               </p>
-              <ul className="m-0 flex list-none flex-col gap-2 p-0">
+              <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
                 {groupLines.map(group => {
                   const meta = groups.find(g => g.id === group.groupId);
                   return (

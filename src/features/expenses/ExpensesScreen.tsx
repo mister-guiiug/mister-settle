@@ -224,7 +224,7 @@ export function ExpensesScreen() {
           {t('expenses.noMatch')}
         </p>
       ) : (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
           {live.map(row)}
         </ul>
       )}

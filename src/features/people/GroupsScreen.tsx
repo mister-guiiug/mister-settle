@@ -142,7 +142,7 @@ export function GroupsScreen() {
           description={t('groups.emptyHint')}
         />
       ) : (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
           {active.map(group => (
             <li key={group.id}>{row(group)}</li>
           ))}

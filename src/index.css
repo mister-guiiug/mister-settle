@@ -100,3 +100,146 @@ body {
       max(env(safe-area-inset-bottom), 0px)
   );
 }
+
+/*
+ * ════════════════════════════════════════════════════════════════════════════
+ * LE MOUVEMENT
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ * TOUT EST SOUS `no-preference`, ET C'EST LA DÉCISION PRINCIPALE. La règle
+ * habituelle — animer partout, puis tout éteindre dans un bloc
+ * `prefers-reduced-motion: reduce` — oublie ce qu'elle ajoute : chaque
+ * animation nouvelle doit penser à s'éteindre, et celle qu'on oublie ne se
+ * voit pas en la relisant. Ici, l'animation n'existe QUE si la personne n'a
+ * rien demandé de contraire. Il n'y a donc rien à éteindre, et rien à oublier.
+ * (Les e2e du socle forcent `reducedMotion` : ces règles ne s'appliquent pas
+ * en test, et aucun parcours n'attend une animation.)
+ *
+ * CE QUI DÉCLENCHE, C'EST LA NAISSANCE D'UN ÉLÉMENT, pas un état React. Une
+ * animation CSS part quand l'élément entre dans le document : le routeur
+ * remplace l'écran, la liste rend ses lignes, et le mouvement suit sans
+ * qu'aucun composant n'ait à le savoir. Pas de bibliothèque, pas de `key` de
+ * circonstance, rien à débrancher au démontage — et 0 kB de plus au paquet.
+ *
+ * LE VOCABULAIRE EST COURT, exprès : une entrée d'écran, une entrée de ligne
+ * (décalée), un pas d'assistant (qui sait d'où il vient), une pastille qui
+ * confirme, un appui qui répond. Cinq gestes ; au-delà, ce n'est plus une
+ * interface qui répond, c'est une interface qui se regarde.
+ *
+ * Non layered, comme le reste du fichier.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * L'ÉCRAN QUI ARRIVE. `#contenu` est le `<main>` de `App.tsx` ; ses enfants
+   * directs sont les racines d'écran que le routeur monte et démonte. Huit
+   * pixels et 220 ms : assez pour dire « c'est un autre écran », trop peu pour
+   * qu'on attende quoi que ce soit.
+   */
+  #contenu > * {
+    animation: settle-entree 220ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  /*
+   * LES LIGNES D'UNE LISTE, l'une après l'autre. Le décalage s'arrête à la
+   * huitième : au-delà, il ne se lit plus comme un ordre mais comme une
+   * lenteur, et une liste de trente dépenses finirait par se charger « en
+   * retard » sous les yeux de qui la déroule.
+   */
+  .settle-liste > * {
+    animation: settle-ligne 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .settle-liste > *:nth-child(2) {
+    animation-delay: 25ms;
+  }
+  .settle-liste > *:nth-child(3) {
+    animation-delay: 50ms;
+  }
+  .settle-liste > *:nth-child(4) {
+    animation-delay: 75ms;
+  }
+  .settle-liste > *:nth-child(5) {
+    animation-delay: 100ms;
+  }
+  .settle-liste > *:nth-child(6) {
+    animation-delay: 125ms;
+  }
+  .settle-liste > *:nth-child(7) {
+    animation-delay: 150ms;
+  }
+  .settle-liste > *:nth-child(n + 8) {
+    animation-delay: 175ms;
+  }
+
+  /*
+   * LE PAS DE L'ASSISTANT, qui vient de la droite quand on avance et de la
+   * gauche quand on revient : c'est la seule animation de cette feuille qui
+   * porte une information — le sens de la marche.
+   */
+  .settle-pas {
+    animation: settle-pas-avant 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .settle-pas[data-sens='arriere'] {
+    animation-name: settle-pas-arriere;
+  }
+
+  /*
+   * LA PASTILLE QUI CONFIRME. Valider une dépense ne change qu'un mot dans un
+   * coin de l'écran ; sans ce battement, le geste n'a pas d'accusé de
+   * réception.
+   */
+  .settle-pastille {
+    animation: settle-pastille 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /*
+   * L'APPUI QUI RÉPOND. Les lignes cliquables sont des liens qui enveloppent
+   * une carte du socle : `:has` les reconnaît sans qu'aucun écran n'ait à se
+   * décorer d'une classe. Là où `:has` manque, il ne manque qu'un enfoncement.
+   */
+  #contenu a:has(> [data-dwc='card']) {
+    transition: transform 120ms ease-out;
+  }
+  #contenu a:has(> [data-dwc='card']):active {
+    transform: scale(0.985);
+  }
+}
+
+@keyframes settle-entree {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes settle-ligne {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes settle-pas-avant {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@keyframes settle-pas-arriere {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
+@keyframes settle-pastille {
+  0% {
+    transform: scale(0.85);
+  }
+  55% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
