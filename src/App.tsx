@@ -11,6 +11,7 @@ import {
   Home,
   Info,
   LayoutDashboard,
+  Receipt,
   Settings,
   SlidersHorizontal,
   UserRound,
@@ -74,6 +75,21 @@ const GroupsScreen = lazy(() =>
     default: m.GroupsScreen,
   }))
 );
+const ExpensesScreen = lazy(() =>
+  import('./features/expenses/ExpensesScreen.tsx').then(m => ({
+    default: m.ExpensesScreen,
+  }))
+);
+const ExpenseWizardScreen = lazy(() =>
+  import('./features/expenses/ExpenseWizardScreen.tsx').then(m => ({
+    default: m.ExpenseWizardScreen,
+  }))
+);
+const ExpenseDetailScreen = lazy(() =>
+  import('./features/expenses/ExpenseDetailScreen.tsx').then(m => ({
+    default: m.ExpenseDetailScreen,
+  }))
+);
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -129,6 +145,11 @@ function Shell() {
           end: true,
         },
         {
+          href: `/e/${spaceId}/depenses`,
+          label: t('nav.expenses'),
+          icon: <Receipt aria-hidden="true" />,
+        },
+        {
           href: `/e/${spaceId}/personnes`,
           label: t('nav.people'),
           icon: <Users aria-hidden="true" />,
@@ -147,6 +168,15 @@ function Shell() {
     if (matchPath('/reglages', pathname)) return t('settings.title');
     if (matchPath('/compte', pathname)) return t('account.title');
     if (matchPath('/a-propos', pathname)) return t('about.title');
+    if (matchPath('/e/:spaceId/depenses', pathname)) return t('expenses.title');
+    if (matchPath('/e/:spaceId/depenses/nouvelle', pathname))
+      return t('wizard.newTitle');
+    if (matchPath('/e/:spaceId/depenses/:expenseId/modifier', pathname))
+      return t('wizard.editTitle');
+    if (matchPath('/e/:spaceId/depenses/:expenseId/repartition', pathname))
+      return t('wizard.splitTitle');
+    if (matchPath('/e/:spaceId/depenses/:expenseId', pathname))
+      return t('expense.title');
     if (matchPath('/e/:spaceId/personnes', pathname)) return t('people.title');
     if (matchPath('/e/:spaceId/regroupements', pathname))
       return t('groups.title');
@@ -159,6 +189,13 @@ function Shell() {
   const backHref = (() => {
     if (pathname === '/') return undefined;
     if (matchPath('/e/:spaceId', pathname)) return '/';
+    // Sous la liste des dépenses (détail, assistant), on remonte à la liste.
+    if (
+      spaceId &&
+      matchPath({ path: '/e/:spaceId/depenses', end: false }, pathname) &&
+      !matchPath('/e/:spaceId/depenses', pathname)
+    )
+      return `/e/${spaceId}/depenses`;
     if (spaceId) return `/e/${spaceId}`;
     return '/';
   })();
@@ -188,6 +225,23 @@ function Shell() {
             <Route path="/espaces/nouveau" element={<NewSpaceScreen />} />
             <Route path="/e/:spaceId" element={<SpaceShell />}>
               <Route index element={<SpaceDashboardScreen />} />
+              <Route path="depenses" element={<ExpensesScreen />} />
+              <Route
+                path="depenses/nouvelle"
+                element={<ExpenseWizardScreen mode="new" />}
+              />
+              <Route
+                path="depenses/:expenseId"
+                element={<ExpenseDetailScreen />}
+              />
+              <Route
+                path="depenses/:expenseId/modifier"
+                element={<ExpenseWizardScreen mode="edit" />}
+              />
+              <Route
+                path="depenses/:expenseId/repartition"
+                element={<ExpenseWizardScreen mode="split" />}
+              />
               <Route path="personnes" element={<ParticipantsScreen />} />
               <Route path="regroupements" element={<GroupsScreen />} />
               <Route path="reglages" element={<SpaceSettingsScreen />} />

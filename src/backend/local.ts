@@ -8,8 +8,8 @@ import {
   checkExpense,
   computeAllocations,
   hasBlockingIssue,
-  type ExpenseInput as DomainExpenseInput,
 } from '../domain/expense.ts';
+import { expenseInputFromLines as toDomainInput } from '../domain/expense-form.ts';
 import {
   BackendError,
   activityEntrySchema,
@@ -157,38 +157,6 @@ export const COMMON_CATEGORIES: ReadonlyArray<{
 ];
 
 const now = () => new Date().toISOString();
-
-function toDomainInput(expense: {
-  amount: number;
-  currency: string;
-  fxRateScaled: number | null;
-  splitMethod: 'equal' | 'amount' | 'shares';
-  payers: ReadonlyArray<{ participantId: string; amount: number }>;
-  beneficiaries: ReadonlyArray<{
-    participantId: string;
-    position: number;
-    shares: number | null;
-    amountInput: number | null;
-    viaGroupId: string | null;
-  }>;
-  selectedGroupIds: readonly string[];
-}): DomainExpenseInput {
-  return {
-    amount: expense.amount,
-    currency: expense.currency,
-    fxRateScaled: expense.fxRateScaled,
-    method: expense.splitMethod,
-    payers: expense.payers,
-    beneficiaries: expense.beneficiaries.map(b => ({
-      participantId: b.participantId,
-      position: b.position,
-      ...(b.amountInput !== null ? { amount: b.amountInput } : {}),
-      ...(b.shares !== null ? { shares: b.shares } : {}),
-      viaGroupIds: b.viaGroupId ? [b.viaGroupId] : [],
-    })),
-    selectedGroupIds: expense.selectedGroupIds,
-  };
-}
 
 export function createLocalBackend(): Backend {
   const read = (): LocalDb => localDb.load();
