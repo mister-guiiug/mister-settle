@@ -114,19 +114,24 @@ language sql stable security definer set search_path = public as $$
   select space_role(p_space) is not null;
 $$;
 
+-- JAMAIS NULL. Pour un non-membre, `space_role` rend NULL, et `NULL in (…)`
+-- rend NULL : une politique le lit comme faux, mais `if not NULL` dans une
+-- fonction ne lève JAMAIS — c'est ainsi qu'un compte étranger a pu appeler
+-- `save_expense` lors de la première exécution de `espaces.test.sql`. D'où le
+-- `coalesce` : ces fonctions répondent vrai ou faux, rien d'autre.
 create or replace function can_contribute(p_space uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select space_role(p_space) in ('owner', 'admin', 'contributor');
+  select coalesce(space_role(p_space) in ('owner', 'admin', 'contributor'), false);
 $$;
 
 create or replace function is_space_admin(p_space uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select space_role(p_space) in ('owner', 'admin');
+  select coalesce(space_role(p_space) in ('owner', 'admin'), false);
 $$;
 
 create or replace function is_space_owner(p_space uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select space_role(p_space) = 'owner';
+  select coalesce(space_role(p_space) = 'owner', false);
 $$;
 
 -- Les politiques s'exécutent sous le rôle de la requête : il lui faut le
@@ -179,7 +184,11 @@ begin
     raise exception 'la propriété se transfère par transfer_space_ownership'
       using errcode = '42501';
   end if;
-  if tg_op = 'DELETE' and old.role = 'owner' then
+  -- LA CASCADE N'EST PAS UN DÉPART. Quand le propriétaire supprime l'espace,
+  -- la clé étrangère efface ses adhésions après lui : l'espace n'existe déjà
+  -- plus, et ce garde n'a rien à retenir.
+  if tg_op = 'DELETE' and old.role = 'owner'
+     and exists (select 1 from expense_spaces where id = old.space_id) then
     raise exception 'le propriétaire ne quitte pas son espace : transférer d''abord'
       using errcode = '42501';
   end if;
