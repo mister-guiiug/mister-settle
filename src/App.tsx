@@ -101,6 +101,16 @@ const SettlementsScreen = lazy(() =>
     default: m.SettlementsScreen,
   }))
 );
+const InvitationsScreen = lazy(() =>
+  import('./features/invitations/InvitationsScreen.tsx').then(m => ({
+    default: m.InvitationsScreen,
+  }))
+);
+const AcceptInvitationScreen = lazy(() =>
+  import('./features/invitations/AcceptInvitationScreen.tsx').then(m => ({
+    default: m.AcceptInvitationScreen,
+  }))
+);
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -192,6 +202,9 @@ function Shell() {
       return t('wizard.splitTitle');
     if (matchPath('/e/:spaceId/depenses/:expenseId', pathname))
       return t('expense.title');
+    if (matchPath('/invitation/:token', pathname)) return t('accept.title');
+    if (matchPath('/e/:spaceId/invitations', pathname))
+      return t('invitations.title');
     if (matchPath('/e/:spaceId/soldes', pathname)) return t('balances.title');
     if (matchPath('/e/:spaceId/remboursements', pathname))
       return t('settlements.title');
@@ -265,7 +278,12 @@ function Shell() {
               <Route path="personnes" element={<ParticipantsScreen />} />
               <Route path="regroupements" element={<GroupsScreen />} />
               <Route path="reglages" element={<SpaceSettingsScreen />} />
+              <Route path="invitations" element={<InvitationsScreen />} />
             </Route>
+            <Route
+              path="/invitation/:token"
+              element={<AcceptInvitationScreen />}
+            />
             <Route path="/reglages" element={<SettingsScreen />} />
             <Route path="/compte" element={<AccountScreen />} />
             <Route path="/a-propos" element={<AboutScreen />} />
