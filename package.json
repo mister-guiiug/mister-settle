@@ -27,9 +27,9 @@
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
   "bundleBudget": {
-    "totalGzipKb": 270,
+    "totalGzipKb": 300,
     "mainChunkKb": 430,
-    "_pourquoi": "Relevé 243,3 kB gzip le 07/09/2026 après les lots 5 à 7 (personnes, regroupements, dépenses : liste, assistant en trois pas, détail — chacun en chunk paresseux de 2 à 4 kB ; le chunk principal reste à 79,5 kB). 270 = 243,3 × 1,10 arrondi à la dizaine supérieure — la formule du cliquet du socle. Relevé précédent : 217,6 après le lot 3."
+    "_pourquoi": "Relevé 272,2 kB gzip le 07/09/2026 après les lots 8 à 13 (soldes, remboursements, invitations, justificatifs, activité, hors-ligne, statistiques et exports) — chaque écran en chunk paresseux, la cache de lecture et la file de synchronisation dans le chunk principal (79 kB), les modules CSV / XLSX du socle chargés au clic. 300 = 272,2 × 1,10 arrondi à la dizaine supérieure — la formule du cliquet du socle. Relevés précédents : 217,6 (lot 3), 243,3 (lot 7)."
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
