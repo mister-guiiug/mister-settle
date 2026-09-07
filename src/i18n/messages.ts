@@ -3,21 +3,15 @@
  * FORME : `createI18n` dérive le type des clés du dictionnaire de repli, et le
  * compilateur refuse ensuite `t('cle.qui.nexiste.pas')`.
  *
- * Deux locales seulement ici. En ajouter une se fait en copiant `fr` et en
- * traduisant : la forme, elle, est vérifiée à la compilation.
- *
  * CE FICHIER NE CONTIENT PAS LES LIBELLÉS DES COMPOSANTS DU SOCLE (« Fermer »,
  * « Réessayer », « Retour »…). Ils vivent dans `react/labels`, en sept langues,
  * et `I18nProvider` pose `LabelsProvider` avec la locale courante tout seul.
- * Les redéclarer ici, c'est le travail que sept apps ont fait dans huit
- * fichiers-pont d'environ quatre cents lignes, avant que le socle ne porte les
- * traductions.
- */
-/**
- * PAS DE `as const` ICI, et c'est délibéré. Il figerait chaque chaîne
- * française comme son PROPRE type littéral, et le dictionnaire anglais devrait
- * alors contenir… les mêmes mots français. La forme est ce qui doit
- * correspondre, pas le contenu.
+ *
+ * LE MOT « REGROUPEMENT » N'EST QU'ICI (ADR 0012) : le modèle dit
+ * `participant_groups`, et changer le mot ne change rien d'autre.
+ *
+ * PAS DE `as const` : il figerait chaque chaîne française comme son propre
+ * type littéral. La forme est ce qui doit correspondre, pas le contenu.
  */
 const fr = {
   app: {
@@ -25,51 +19,122 @@ const fr = {
     tagline: 'Qui a payé, qui doit combien — sans toucher à l’argent.',
   },
   nav: {
-    home: 'Accueil',
+    home: 'Espaces',
     settings: 'Réglages',
     account: 'Compte',
     about: 'À propos',
+    dashboard: 'Tableau de bord',
+    expenses: 'Dépenses',
+    balances: 'Soldes',
+    people: 'Personnes',
+    settle: 'Régler',
+    more: 'Plus',
+    spaceSettings: 'Réglages de l’espace',
   },
-  home: {
-    title: 'Notes',
-    loading: 'Chargement des notes',
-    empty: 'Aucune note pour le moment.',
-    emptyHint: 'La première note montrera la persistance versionnée.',
-    add: 'Ajouter',
-    field: 'Nouvelle note',
-    placeholder: 'Ce que je ne veux pas oublier',
-    remove: 'Supprimer',
-    removed: 'Note supprimée',
-    undo: 'Annuler',
+  errors: {
+    conflict:
+      'Quelqu’un a modifié ceci entre-temps. Rechargez, puis refaites votre geste.',
+    forbidden: 'Vous n’avez pas le droit de faire cela ici.',
+    'not-found': 'Introuvable — peut-être supprimé.',
+    invalid: 'Saisie refusée : {detail}',
+    gone: 'Ce lien n’est plus valable.',
+    'local-mode':
+      'Ce geste demande un compte : ici, tout reste sur cet appareil.',
+    network: 'Pas de réseau. Réessayez quand la connexion revient.',
+    unknown: 'Une erreur est survenue : {detail}',
+  },
+  spaces: {
+    title: 'Mes espaces',
+    loading: 'Chargement des espaces',
+    empty: 'Aucun espace pour le moment.',
+    emptyHint:
+      'Un espace regroupe des personnes et leurs dépenses : un voyage, une colocation, une famille.',
+    create: 'Créer un espace',
+    archived: 'Espaces archivés',
+    open: 'Ouvrir {name}',
+    role: {
+      owner: 'Propriétaire',
+      admin: 'Administration',
+      contributor: 'Contribution',
+      reader: 'Lecture',
+    },
     count: {
-      one: '{count} note',
-      other: '{count} notes',
+      one: '{count} espace',
+      other: '{count} espaces',
     },
-    sync: {
-      refused: {
-        one: '{count} écriture refusée par la base : {error}',
-        other: '{count} écritures refusées par la base : {error}',
-      },
-      retry: 'Réessayer',
+  },
+  newSpace: {
+    title: 'Nouvel espace',
+    name: 'Nom',
+    namePlaceholder: 'Vacances en Bretagne',
+    description: 'Description',
+    descriptionPlaceholder: 'Facultatif',
+    currency: 'Devise',
+    icon: 'Icône',
+    iconHint: 'Un emoji, ou rien.',
+    color: 'Couleur',
+    meName: 'Mon nom dans cet espace',
+    meNameHint: 'C’est ainsi que les autres vous verront.',
+    submit: 'Créer l’espace',
+    nameRequired: 'Le nom est obligatoire.',
+  },
+  space: {
+    loading: 'Chargement de l’espace',
+    notFound: 'Cet espace n’existe pas, ou vous n’y avez plus accès.',
+    backToSpaces: 'Retour aux espaces',
+    archivedBanner:
+      'Cet espace est archivé : il se consulte, il ne se modifie plus.',
+    people: {
+      one: '{count} personne',
+      other: '{count} personnes',
     },
+    expenses: {
+      one: '{count} dépense validée',
+      other: '{count} dépenses validées',
+    },
+    drafts: {
+      one: '{count} brouillon',
+      other: '{count} brouillons',
+    },
+    myBalance: 'Mon solde',
+    myBalanceHint: 'Positif : on vous doit. Négatif : vous devez.',
+    noMe: 'Vous n’êtes rattaché·e à aucune personne de cet espace.',
+    total: 'Total des dépenses',
+    comingSoon: 'Bientôt',
+  },
+  spaceSettings: {
+    title: 'Réglages de l’espace',
+    identity: 'Identité',
+    save: 'Enregistrer',
+    saved: 'Réglages enregistrés.',
+    archive: 'Archiver l’espace',
+    unarchive: 'Réactiver l’espace',
+    archiveBody:
+      'Un espace archivé reste consultable avec tout son historique ; plus personne n’y écrit.',
+    danger: 'Zone dangereuse',
+    remove: 'Supprimer l’espace',
+    removeConfirm: 'Supprimer « {name} » ?',
+    removeBody:
+      'Les personnes, les dépenses et l’historique disparaissent définitivement. Exportez d’abord si vous voulez les garder.',
+    ownerOnly: 'Réservé au propriétaire de l’espace.',
+    adminOnly: 'Réservé aux administrateurs de l’espace.',
   },
   settings: {
     title: 'Réglages',
     appearance: 'Apparence',
     language: 'Langue',
-    data: 'Données',
-    export: 'Exporter mes notes',
-    import: 'Importer mes notes',
-    importConfirm: 'Remplacer les notes actuelles ?',
+    data: 'Données de cet appareil',
+    dataHint:
+      'Sans compte, tout vit ici. Un fichier exporté se relit sur un autre appareil.',
+    export: 'Exporter mes données',
+    import: 'Importer mes données',
+    importConfirm: 'Remplacer les données actuelles ?',
     importBody:
       'Le fichier remplacera tout ce qui est sur cet appareil. Exportez d’abord si vous voulez garder l’état actuel.',
-    imported: {
-      one: '{count} note importée.',
-      other: '{count} notes importées.',
-    },
+    imported: 'Données importées.',
     importFailed: 'Fichier refusé : {error}',
     reset: 'Tout effacer',
-    resetConfirm: 'Effacer toutes les notes ?',
+    resetConfirm: 'Effacer toutes les données de cet appareil ?',
     resetBody: 'Cette action est définitive.',
     backend: 'Source de données',
     backendLocal: 'Cet appareil seulement',
@@ -91,7 +156,7 @@ const fr = {
     useLink: 'Recevoir un lien plutôt',
     danger: {
       title: 'Zone dangereuse',
-      body: 'Supprimer votre compte efface vos notes, votre profil et le compte lui-même. Rien n’est conservé, et cette action ne s’annule pas.',
+      body: 'Effacer votre compte et ce qui n’appartient qu’à lui. Les espaces partagés gardent vos dépenses, sous votre nom de personne.',
       action: 'Supprimer mon compte',
       confirmLabel: 'Retapez votre adresse pour confirmer',
       confirmHint: 'L’adresse du compte est {email}.',
@@ -101,7 +166,6 @@ const fr = {
       failed: 'La suppression a échoué : {error}',
     },
   },
-
   about: {
     title: 'À propos',
     what: 'Mister Settle répartit les dépenses d’un groupe — voyage, colocation, famille — et calcule qui doit quoi à qui. Les remboursements se font en dehors de l’application : elle ne manipule jamais d’argent.',
@@ -115,51 +179,121 @@ const en: typeof fr = {
     tagline: 'Who paid, who owes what — without touching the money.',
   },
   nav: {
-    home: 'Home',
+    home: 'Spaces',
     settings: 'Settings',
     account: 'Account',
     about: 'About',
+    dashboard: 'Dashboard',
+    expenses: 'Expenses',
+    balances: 'Balances',
+    people: 'People',
+    settle: 'Settle up',
+    more: 'More',
+    spaceSettings: 'Space settings',
   },
-  home: {
-    title: 'Notes',
-    loading: 'Loading notes',
-    empty: 'No notes yet.',
-    emptyHint: 'The first note will show versioned persistence at work.',
-    add: 'Add',
-    field: 'New note',
-    placeholder: "What I don't want to forget",
-    remove: 'Delete',
-    removed: 'Note deleted',
-    undo: 'Undo',
+  errors: {
+    conflict:
+      'Someone changed this in the meantime. Reload, then redo your change.',
+    forbidden: 'You are not allowed to do that here.',
+    'not-found': 'Not found — maybe deleted.',
+    invalid: 'Rejected input: {detail}',
+    gone: 'This link is no longer valid.',
+    'local-mode':
+      'This needs an account: here, everything stays on this device.',
+    network: 'No network. Try again once the connection is back.',
+    unknown: 'Something went wrong: {detail}',
+  },
+  spaces: {
+    title: 'My spaces',
+    loading: 'Loading spaces',
+    empty: 'No space yet.',
+    emptyHint:
+      'A space gathers people and their expenses: a trip, a flat share, a family.',
+    create: 'Create a space',
+    archived: 'Archived spaces',
+    open: 'Open {name}',
+    role: {
+      owner: 'Owner',
+      admin: 'Admin',
+      contributor: 'Contributor',
+      reader: 'Reader',
+    },
     count: {
-      one: '{count} note',
-      other: '{count} notes',
+      one: '{count} space',
+      other: '{count} spaces',
     },
-    sync: {
-      refused: {
-        one: '{count} write refused by the database: {error}',
-        other: '{count} writes refused by the database: {error}',
-      },
-      retry: 'Retry',
+  },
+  newSpace: {
+    title: 'New space',
+    name: 'Name',
+    namePlaceholder: 'Holidays in Brittany',
+    description: 'Description',
+    descriptionPlaceholder: 'Optional',
+    currency: 'Currency',
+    icon: 'Icon',
+    iconHint: 'An emoji, or nothing.',
+    color: 'Colour',
+    meName: 'My name in this space',
+    meNameHint: 'This is how others will see you.',
+    submit: 'Create the space',
+    nameRequired: 'The name is required.',
+  },
+  space: {
+    loading: 'Loading the space',
+    notFound: 'This space does not exist, or you no longer have access to it.',
+    backToSpaces: 'Back to spaces',
+    archivedBanner: 'This space is archived: it can be read, not changed.',
+    people: {
+      one: '{count} person',
+      other: '{count} people',
     },
+    expenses: {
+      one: '{count} validated expense',
+      other: '{count} validated expenses',
+    },
+    drafts: {
+      one: '{count} draft',
+      other: '{count} drafts',
+    },
+    myBalance: 'My balance',
+    myBalanceHint: 'Positive: you are owed. Negative: you owe.',
+    noMe: 'You are not linked to any person in this space.',
+    total: 'Total expenses',
+    comingSoon: 'Coming soon',
+  },
+  spaceSettings: {
+    title: 'Space settings',
+    identity: 'Identity',
+    save: 'Save',
+    saved: 'Settings saved.',
+    archive: 'Archive the space',
+    unarchive: 'Reactivate the space',
+    archiveBody:
+      'An archived space stays readable with its whole history; nobody writes to it any more.',
+    danger: 'Danger zone',
+    remove: 'Delete the space',
+    removeConfirm: 'Delete “{name}”?',
+    removeBody:
+      'People, expenses and history disappear for good. Export first if you want to keep them.',
+    ownerOnly: 'Owner of the space only.',
+    adminOnly: 'Admins of the space only.',
   },
   settings: {
     title: 'Settings',
     appearance: 'Appearance',
     language: 'Language',
-    data: 'Data',
-    export: 'Export my notes',
-    import: 'Import my notes',
-    importConfirm: 'Replace the current notes?',
+    data: 'Data on this device',
+    dataHint:
+      'Without an account, everything lives here. An exported file can be read on another device.',
+    export: 'Export my data',
+    import: 'Import my data',
+    importConfirm: 'Replace the current data?',
     importBody:
       'The file will replace everything on this device. Export first if you want to keep the current state.',
-    imported: {
-      one: '{count} note imported.',
-      other: '{count} notes imported.',
-    },
+    imported: 'Data imported.',
     importFailed: 'File rejected: {error}',
     reset: 'Erase everything',
-    resetConfirm: 'Erase all notes?',
+    resetConfirm: 'Erase all data on this device?',
     resetBody: 'This cannot be undone.',
     backend: 'Data source',
     backendLocal: 'This device only',
@@ -181,7 +315,7 @@ const en: typeof fr = {
     useLink: 'Send me a link instead',
     danger: {
       title: 'Danger zone',
-      body: 'Deleting your account erases your notes, your profile and the account itself. Nothing is kept, and this cannot be undone.',
+      body: 'Erase your account and what belongs to it alone. Shared spaces keep your expenses, under your person’s name.',
       action: 'Delete my account',
       confirmLabel: 'Type your address again to confirm',
       confirmHint: 'The account address is {email}.',
@@ -191,7 +325,6 @@ const en: typeof fr = {
       failed: 'Deletion failed: {error}',
     },
   },
-
   about: {
     title: 'About',
     what: 'Mister Settle splits a group’s expenses — a trip, a flat share, a family — and works out who owes what to whom. Repayments happen outside the app: it never handles money.',
