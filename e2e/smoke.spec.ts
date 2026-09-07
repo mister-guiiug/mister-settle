@@ -27,7 +27,7 @@ test.describe('@critical le cadre', () => {
     );
 
     const nom = `Bretagne ${Date.now()}`;
-    await page.getByLabel('Nom').fill(nom);
+    await page.getByLabel('Nom', { exact: true }).fill(nom);
     await page.getByLabel('Mon nom dans cet espace').fill('Alice');
     await page.getByRole('button', { name: 'Créer l’espace' }).click();
 
@@ -48,7 +48,7 @@ test.describe('@critical le cadre', () => {
     page,
   }) => {
     await page.goto('/espaces/nouveau');
-    await page.getByLabel('Nom').fill('À renommer');
+    await page.getByLabel('Nom', { exact: true }).fill('À renommer');
     await page.getByRole('button', { name: 'Créer l’espace' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'À renommer'
@@ -58,7 +58,7 @@ test.describe('@critical le cadre', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Réglages de l’espace'
     );
-    await page.getByLabel('Nom').fill('Renommé');
+    await page.getByLabel('Nom', { exact: true }).fill('Renommé');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByText('Réglages enregistrés.')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -109,7 +109,7 @@ test.describe('@critical le cadre', () => {
     page,
   }) => {
     await page.goto('/espaces/nouveau');
-    await page.getByLabel('Nom').fill('Avant import');
+    await page.getByLabel('Nom', { exact: true }).fill('Avant import');
     await page.getByRole('button', { name: 'Créer l’espace' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Avant import'

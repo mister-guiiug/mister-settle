@@ -25,7 +25,6 @@ import { configReport } from '../../app/config/env.ts';
  */
 export function SettingsScreen() {
   const { t, locale, setLocale, locales } = useI18n();
-  const spaces = useSpaces(state => state.spaces);
   const load = useSpaces(state => state.load);
   const [confirming, setConfirming] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -60,7 +59,10 @@ export function SettingsScreen() {
     event.target.value = '';
     if (!file) return;
     const json = await file.text();
-    if (spaces.length > 0) setPending(json);
+    // CE QUI EXISTE SE LIT DANS LE MAGASIN PERSISTANT, pas dans l'état vivant :
+    // arrivé ici par un rechargement, le magasin Zustand est encore vide tant
+    // que personne ne l'a chargé — et l'import remplacerait sans demander.
+    if (localDb.load().spaces.length > 0) setPending(json);
     else await runImport(json);
   };
 
