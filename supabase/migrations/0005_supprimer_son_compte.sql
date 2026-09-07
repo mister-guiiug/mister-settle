@@ -2,22 +2,16 @@
 -- ║ Supprimer son compte — le droit à l'effacement (RGPD art. 17), sans      ║
 -- ║ écrire au mainteneur.                                                    ║
 -- ║                                                                          ║
--- ║ RELEVÉ DU 06/09/2026. Huit applications du parc ont des comptes et       ║
--- ║ n'offrent aucune voie d'effacement : miss-uwh (`wipeLocal` ne purge que  ║
--- ║ le miroir local), mister-molkky, miss-lookhouse, mister-miss-koh         ║
--- ║ (« reste à faire »), miss-carbook (le README renvoie « au                ║
--- ║ fournisseur »), mister-footcoach, mister-qowa, miss-ticket-pwa. Deux     ║
--- ║ l'ont fait — mister-doc par anonymisation, mister-family-map par un      ║
--- ║ port. Et le squelette n'offrait que `signOut`.                           ║
--- ║                                                                          ║
--- ║ POURQUOI EFFACER, ET NON ANONYMISER. Mister-doc anonymise parce qu'il ne ║
--- ║ PEUT PAS effacer : les gardes passées d'un médecin sont rattachées à sa  ║
--- ║ fiche en `on delete cascade`, et supprimer la fiche détruirait le        ║
--- ║ planning de tout le service. C'est une contrainte de son métier, pas une ║
--- ║ doctrine. Ici, rien de ce que possède un compte n'appartient à quelqu'un ║
--- ║ d'autre : effacer est plus simple, plus vérifiable, et c'est ce que      ║
--- ║ l'article 17 demande. Une application dont les données survivent à leur  ║
--- ║ auteur doit anonymiser, et l'ÉCRIRE (cf. docs/adr/0009).                 ║
+-- ║ CE QUE CETTE VERSION FAIT, ET CE QU'ELLE NE FAIT PAS ENCORE. Elle efface ║
+-- ║ ce qui n'appartient qu'au compte : son profil, ses rôles d'application,  ║
+-- ║ et le compte lui-même dans `auth.users`. Les tables de l'application     ║
+-- ║ (0006, 0007) n'existent pas encore à ce point des migrations ; ce que    ║
+-- ║ leur cascade fait d'un compte effacé est écrit dans leurs clés           ║
+-- ║ étrangères — adhésions et rattachements disparaissent, les personnes et  ║
+-- ║ les dépenses restent, parce qu'elles appartiennent aux autres membres    ║
+-- ║ (ADR 0009 du squelette, H11 de l'analyse). Le cas de l'espace dont le    ║
+-- ║ compte est PROPRIÉTAIRE est traité par une version ultérieure de cette   ║
+-- ║ fonction, avec ses tests.                                                ║
 -- ║                                                                          ║
 -- ║ CE QUI REND CETTE FONCTION POSSIBLE, et qui n'avait jamais été prouvé    ║
 -- ║ sur ce parc : `security definer` la fait s'exécuter avec les droits de   ║
@@ -44,16 +38,12 @@ begin
       using errcode = '42501';
   end if;
 
-  -- LES DONNÉES DE L'APPLICATION, NOMMÉES UNE PAR UNE.
-  --
-  -- La cascade de `auth.users` les emporterait toutes : `profiles`, `notes`
-  -- et `user_roles` référencent `auth.users (id) on delete cascade`. On les
-  -- efface quand même explicitement, et c'est délibéré — le jour où une
-  -- application ajoute une table en `on delete set null`, ou sans clé
-  -- étrangère du tout (un compteur, un journal, une pièce jointe dans le
-  -- stockage), la cascade ne la voit pas et la donnée survit à son auteur.
-  -- Cette liste est l'endroit où on la complète, et elle se relit.
-  delete from public.notes where user_id = uid;
+  -- LES DONNÉES DU COMPTE, NOMMÉES UNE PAR UNE. La cascade de `auth.users`
+  -- les emporterait ; on les efface quand même explicitement, et c'est
+  -- délibéré — le jour où une table arrive en `on delete set null`, ou sans
+  -- clé étrangère du tout, la cascade ne la voit pas et la donnée survit à
+  -- son auteur. Cette liste est l'endroit où on la complète, et elle se
+  -- relit.
   delete from public.user_roles where user_id = uid;
   delete from public.profiles where id = uid;
 
@@ -74,6 +64,6 @@ revoke execute on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
 
 comment on function public.delete_my_account() is
-  'Efface les données de l''utilisateur courant puis son compte dans auth.users. '
+  'Efface les données du compte courant puis le compte dans auth.users. '
   'security definer, propriété de postgres : c''est de lui qu''elle emprunte le '
   'droit d''écrire dans auth.users. Preuve : supabase/tests/suppression-compte.test.sql.';
