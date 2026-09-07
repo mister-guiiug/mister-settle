@@ -68,7 +68,14 @@ export default defineConfig(({ command }) => {
       // l'ignore dans une balise `<meta>`, et GitHub Pages ne pose aucun
       // en-tête. Le greffon refuse la directive plutôt que d'en donner
       // l'illusion.
-      cspPlugin({ dev: command === 'serve' }),
+      // LES HÔTES DE LA BASE PARTAGÉE : les appels et le temps réel (connect),
+      // et les URL signées des justificatifs (img). Les options REMPLACENT
+      // les défauts du greffon : on les redonne en entier.
+      cspPlugin({
+        dev: command === 'serve',
+        connectSrc: ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+      }),
 
       // Repli SPA : sans `404.html`, rafraîchir un lien profond sert la page
       // d'erreur de GitHub. Quatre apps en souffraient en production.

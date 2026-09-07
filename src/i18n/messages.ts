@@ -169,6 +169,8 @@ const fr = {
     adminOnly: 'Seule l’administration crée ou modifie les regroupements.',
   },
   errorDetail: {
+    'image-type': 'Ce fichier n’est pas une image acceptée (JPEG, PNG, WebP).',
+    'image-size': 'Image trop lourde : 25 Mo au plus avant compression.',
     'duplicate-name': 'Ce nom est déjà pris dans cet espace.',
     'participant-linked': 'Cette personne est déjà rattachée à un compte.',
     'foreign-member': 'Un membre n’appartient pas à cet espace.',
@@ -446,6 +448,21 @@ const fr = {
     sayWho: 'Bienvenue — dites qui vous êtes parmi les personnes de l’espace.',
     home: 'Retour à l’accueil',
   },
+  attachments: {
+    title: 'Justificatifs',
+    count: {
+      one: '{count} justificatif',
+      other: '{count} justificatifs',
+    },
+    empty: 'Aucun justificatif.',
+    add: 'Ajouter une photo',
+    hint: 'Réencodée sans métadonnées (EXIF, position) avant l’envoi ; 5 Mo au plus.',
+    open: 'Ouvrir le justificatif {n}',
+    alt: 'Justificatif {n}',
+    remove: 'Retirer le justificatif {n}',
+    removeConfirm: 'Retirer ce justificatif ?',
+    removeBody: 'Le fichier est supprimé ; la dépense ne change pas.',
+  },
   spaceSettings: {
     title: 'Réglages de l’espace',
     identity: 'Identité',
@@ -673,6 +690,8 @@ const en: typeof fr = {
     adminOnly: 'Only administrators create or edit groups.',
   },
   errorDetail: {
+    'image-type': 'This file is not an accepted image (JPEG, PNG, WebP).',
+    'image-size': 'Image too heavy: 25 MB at most before compression.',
     'duplicate-name': 'This name is already taken in this space.',
     'participant-linked': 'This person is already linked to an account.',
     'foreign-member': 'A member does not belong to this space.',
@@ -946,6 +965,21 @@ const en: typeof fr = {
     joined: 'Welcome to the space.',
     sayWho: 'Welcome — say who you are among the people of the space.',
     home: 'Back to home',
+  },
+  attachments: {
+    title: 'Receipts',
+    count: {
+      one: '{count} receipt',
+      other: '{count} receipts',
+    },
+    empty: 'No receipt.',
+    add: 'Add a photo',
+    hint: 'Re-encoded without metadata (EXIF, location) before upload; 5 MB at most.',
+    open: 'Open receipt {n}',
+    alt: 'Receipt {n}',
+    remove: 'Remove receipt {n}',
+    removeConfirm: 'Remove this receipt?',
+    removeBody: 'The file is deleted; the expense does not change.',
   },
   spaceSettings: {
     title: 'Space settings',

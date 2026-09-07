@@ -20,6 +20,7 @@ import { can, useCurrentSpace } from '../spaces/useCurrentSpace.ts';
 import { usePeople, usePeopleOf } from '../people/store.ts';
 import { categoryName } from './category-label.ts';
 import { IssueList } from './IssueList.tsx';
+import { AttachmentsCard } from '../attachments/AttachmentsCard.tsx';
 import { useExpenses, useExpensesOf } from './store.ts';
 
 const soft = { color: 'var(--dwc-text-soft)' } as const;
@@ -219,6 +220,12 @@ export function ExpenseDetailScreen() {
           </p>
         ) : null}
       </Card>
+
+      <AttachmentsCard
+        spaceId={space.id}
+        parent={{ expenseId: expense.id }}
+        editable={editable}
+      />
 
       {!rights.contribute ? (
         <p className="m-0 text-xs" style={soft}>
