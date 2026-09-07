@@ -1,8 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mister Settle">
-  <rect width="64" height="64" rx="14" fill="#3b6ea5" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
+  <title id="t">Mister Settle — un S évidé dans une pastille coupée en deux</title>
+  <!--
+    LA SOURCE UNIQUE DE LA MARQUE. Ce fichier est servi tel quel par l'en-tête
+    de la page, il fait le favicon, et `npm run icons` en tire les six PNG du
+    manifeste plus l'icône maskable. Le modifier suffit à changer les trois
+    surfaces ; il n'existe aucune autre copie du logo.
+
+    LE DESSIN. Une pastille coupée en diagonale, bleu d'un côté, vert de
+    l'autre, et le S de Settle ÉVIDÉ dedans : la nuit de la tuile passe au
+    travers de la lettre. Deux moitiés qui ne sont pas la même chose et une
+    lettre qui les traverse, c'est l'application entière — deux personnes, une
+    dépense, et le trait qui va de l'une à l'autre.
+
+    CE QUE LA MARQUE NE FERA JAMAIS. Pas de barre verticale en travers du S :
+    un S barré est un signe de dollar, et cette application ne touche pas à
+    l'argent. Pas de pièce, pas de billet, pas de carte, pas de glyphe de
+    devise non plus. La promesse tient jusque dans le logo.
+
+    LES COULEURS SONT CELLES DE L'APPLICATION, relevées dans `src/index.css` :
+    le bleu de `dwc-primary` en sombre, le vert de `dwc-success` en sombre, et
+    la nuit de `dwc-bg`. Rien n'est choisi ici qui ne soit déjà à l'écran.
+
+    LA PASTILLE FAIT 42 UNITÉS sur 64, soit 65 % de la tuile : elle tient sous
+    la zone de sécurité du masque circulaire, donc rien n'est rogné à
+    l'installation. Et parce que la marque EST un disque, elle traverse le
+    masque sans y perdre sa forme — c'est ce qui l'a fait préférer aux cinq
+    autres propositions.
+
+    LA TUILE RESTE UNIE, et le générateur doit le savoir : le maskable est
+    fabriqué en réduisant cette image puis en comblant le pourtour d'une
+    couleur unie, l'option « bg » de `package.json`, réglée sur 15,17,21 — la
+    teinte exacte du rectangle ci-dessous. Sans cet accord, l'icône installée
+    porte un liseré ; c'était le cas avant ce logo, autour du « P. » hérité du
+    squelette.
+
+    (Et l'option ne peut pas s'écrire ici avec ses deux tirets : XML interdit
+    le double tiret dans un commentaire, et le rasteriseur refuse le fichier.)
+  -->
+  <rect width="64" height="64" rx="14" fill="#0f1115" />
+  <defs>
+    <clipPath id="pastille">
+      <circle cx="32" cy="32" r="21" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#pastille)">
+    <path d="M11 11 H53 L11 53 Z" fill="#7fb0e0" />
+    <path d="M53 11 V53 H11 Z" fill="#7fd6a0" />
+  </g>
+  <!--
+    Le S est TRACÉ dans la couleur de la tuile, pas découpé par un masque :
+    une soustraction demanderait un `mask` que les rasteriseurs traitent
+    diversement, alors qu'un trait de la couleur du fond donne exactement la
+    même image partout. `scale(0.74)` autour du centre le contient dans la
+    pastille, bouts arrondis compris.
+  -->
   <path
-    d="M20 44V20h9.5a8 8 0 0 1 0 16H26v8h-6Zm6-14h3.5a2 2 0 0 0 0-4H26v4Z"
-    fill="#ffffff"
+    d="M42 21 C42 14 22 14 22 22 C22 28 42 33 42 42 C42 50 22 50 22 43"
+    fill="none"
+    stroke="#0f1115"
+    stroke-width="8.5"
+    stroke-linecap="round"
+    transform="translate(32 32) scale(0.74) translate(-32 -32)"
   />
-  <circle cx="44" cy="40" r="4" fill="#ffffff" />
 </svg>
