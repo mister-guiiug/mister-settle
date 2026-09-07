@@ -345,7 +345,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 
 create trigger participants_activity
   after insert or update or delete on participants
