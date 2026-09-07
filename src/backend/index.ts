@@ -2,9 +2,19 @@ import { createBackendSelector } from '@mister-guiiug/dev-pwa-config/backend';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { createLocalBackend } from './local.ts';
 import { createSupabaseNotes } from './supabase.ts';
+import { createQueuedNotes, type QueuedNotes } from './queued-notes.ts';
 import type { Backend } from './ports.ts';
 
 const log = createLogger('backend');
+
+/**
+ * LA FILE D'ÉCRITURES HORS LIGNE, s'il y a un réseau à traverser.
+ *
+ * Elle n'existe qu'en mode distant : entre l'application et `localStorage`,
+ * il n'y a pas de réseau à attendre. `null` en local, et l'écran d'accueil
+ * n'affiche alors aucun indicateur — il n'a rien à dire.
+ */
+let file: QueuedNotes | null = null;
 
 /**
  * LE SÉLECTEUR DE BACKEND, DÉCLARÉ EN UNE FOIS.
@@ -42,7 +52,16 @@ const selectBackend = createBackendSelector<Backend>({
       // Un objet PARTIEL : seul le port `notes` est distant. Tout ce qui n'est
       // pas nommé ici reste servi par le repli. C'est ce qui permet de migrer
       // une application déjà en production, port par port.
-      create: () => ({ notes: createSupabaseNotes() }),
+      //
+      // L'ADAPTATEUR EST ENVELOPPÉ, PAS MODIFIÉ. `createQueuedNotes` rend le
+      // même port et absorbe l'attente : la file du socle enfile les mutations
+      // et les rejoue au retour du réseau (ADR 0010). L'adaptateur Supabase,
+      // lui, ignore qu'il existe une file — il ne sait qu'écrire une ligne.
+      create: () => {
+        file = createQueuedNotes(createSupabaseNotes());
+        void file.start();
+        return { notes: file.notes };
+      },
     },
   },
   onFallback: ({ kind, missing, error }) => {
@@ -66,6 +85,13 @@ export const coverage = {
   remote: selected.remote,
   local: selected.local,
 };
+
+/**
+ * La file d'écritures du backend retenu, ou `null` quand il n'y a pas de
+ * réseau à traverser. C'est ce que l'accueil observe pour dire « hors ligne »,
+ * « N en attente » ou « refusée ».
+ */
+export const notesSync: QueuedNotes | null = file;
 
 export type { Backend, Note, NotesSnapshot } from './ports.ts';
 export { supabase } from './supabase.ts';

@@ -7,6 +7,7 @@ import { useAuthContext } from '@mister-guiiug/dev-pwa-config/react/auth-provide
 import { useI18n } from '../../i18n/index.ts';
 import { useRole } from '../../auth/index.ts';
 import { coverage } from '../../backend/index.ts';
+import { DangerZone } from './DangerZone.tsx';
 
 /**
  * L'écran de compte — le formulaire que quatre applications avaient écrit
@@ -55,18 +56,27 @@ export function AccountScreen() {
 
   if (signedIn) {
     return (
-      <Card>
-        <CardHeader
-          title={t('account.title')}
-          subtitle={user?.email ?? ''}
-          action={
-            admin ? <Badge tone="info">{t('account.admin')}</Badge> : null
-          }
-        />
-        <Button variant="outline" onClick={() => void signOut()}>
-          {t('account.signOut')}
-        </Button>
-      </Card>
+      <>
+        <Card>
+          <CardHeader
+            title={t('account.title')}
+            subtitle={user?.email ?? ''}
+            action={
+              admin ? <Badge tone="info">{t('account.admin')}</Badge> : null
+            }
+          />
+          <Button variant="outline" onClick={() => void signOut()}>
+            {t('account.signOut')}
+          </Button>
+        </Card>
+
+        {/* LE DROIT À L'EFFACEMENT EST ICI, PAS DANS UN COURRIEL. Il n'est
+            rendu que connecté et en mode distant — les deux conditions sont
+            déjà passées à ce point du fichier. Sans adresse au jeton, il n'y
+            a rien à retaper : la carte s'efface plutôt que de demander un
+            geste impossible (cf. ADR 0009). */}
+        {user?.email ? <DangerZone email={user.email} /> : null}
+      </>
     );
   }
 

@@ -82,4 +82,21 @@ body {
  * où la mise en page se lit, dans `App.tsx` : `<BottomNav placement="fixed">`
  * colle la barre, `<PageContainer reserve="bottom-nav">` dégage la place
  * dessous, zone sûre iOS comprise. Ce fichier n'a plus rien à dire sur elle.
+ *
+ * SAUF CECI, ET C'EST UNE COLLISION DU SOCLE. La zone de notification
+ * (`toast-viewport`) est collée en `bottom: 0` avec un `z-index` de 70, la
+ * barre basse fixe au même endroit avec 20 : une notification recouvre la
+ * navigation, exactement comme le bandeau de mise à jour passait SOUS elle
+ * chez mister-miss-koh. Ici on la remonte de la hauteur réservée par
+ * `reserve="bottom-nav"` — la même valeur, au même endroit. Le jour où le
+ * socle saura placer sa zone au-dessus d'une barre déclarée, ces quatre
+ * lignes disparaissent.
+ *
+ * Non layered : ce fichier gagne de plein droit sur `@layer components`.
  */
+[data-dwc='toast-viewport'] {
+  padding-bottom: calc(
+    4.5rem + var(--spacing-fluid-sm, 0.75rem) +
+      max(env(safe-area-inset-bottom), 0px)
+  );
+}
