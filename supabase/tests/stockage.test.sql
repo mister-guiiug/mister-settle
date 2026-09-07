@@ -4,9 +4,44 @@
 -- ║ Le bucket existe et n'est pas public ; l'espace se lit dans le chemin ;  ║
 -- ║ un membre dépose sous le préfixe de SON espace et pas d'un autre ; une   ║
 -- ║ personne étrangère à l'espace ne voit rien et ne dépose rien.            ║
+-- ║                                                                          ║
+-- ║ SUR LA PILE JETABLE, LE SCHÉMA `storage` N'EXISTE PAS (stockage          ║
+-- ║ désactivé) : on en pose un DOUBLE MINIMAL — les deux tables, la RLS,     ║
+-- ║ les droits — puis on installe les politiques par la même fonction que la ║
+-- ║ migration. Là où le schéma existe, le double est ignoré et               ║
+-- ║ l'installation est idempotente.                                          ║
 -- ╚══════════════════════════════════════════════════════════════════════════╝
 
 begin;
+
+do $$
+begin
+  if to_regclass('storage.objects') is null then
+    create schema if not exists storage;
+    create table if not exists storage.buckets (
+      id text primary key,
+      name text not null,
+      public boolean not null default false,
+      file_size_limit bigint,
+      allowed_mime_types text[],
+      created_at timestamptz not null default now()
+    );
+    create table if not exists storage.objects (
+      id uuid primary key default gen_random_uuid(),
+      bucket_id text references storage.buckets (id),
+      name text,
+      owner uuid,
+      metadata jsonb,
+      created_at timestamptz not null default now()
+    );
+    alter table storage.objects enable row level security;
+    grant usage on schema storage to anon, authenticated;
+    grant all on storage.buckets, storage.objects to anon, authenticated;
+  end if;
+end;
+$$;
+select settle_install_receipts();
+
 select plan(10);
 
 insert into auth.users (id, email) values

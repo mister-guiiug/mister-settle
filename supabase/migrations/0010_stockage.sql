@@ -12,17 +12,13 @@
 -- ║ ligne `attachments` (auteur ou administrateur, 0008) qui décide, et      ║
 -- ║ l'adaptateur la retire AVANT l'objet — un refus ne laisse aucun fichier  ║
 -- ║ orphelin.                                                                ║
+-- ║                                                                          ║
+-- ║ LE SCHÉMA `storage` APPARTIENT AU SERVICE DE STOCKAGE, PAS À CE DÉPÔT.   ║
+-- ║ Sur la pile jetable de la CI il est absent (stockage désactivé) ; en     ║
+-- ║ production il est là. L'installation est donc une FONCTION idempotente,  ║
+-- ║ appelée ici quand le schéma existe — et par le test, sur un double       ║
+-- ║ minimal, quand il n'existe pas.                                          ║
 -- ╚══════════════════════════════════════════════════════════════════════════╝
-
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'receipts', 'receipts', false, 5242880,
-  array['image/jpeg', 'image/png', 'image/webp']
-)
-on conflict (id) do update
-  set public = excluded.public,
-      file_size_limit = excluded.file_size_limit,
-      allowed_mime_types = excluded.allowed_mime_types;
 
 -- L'espace d'un objet, lu dans son chemin ; `null` si le chemin n'en porte
 -- pas — et une politique qui reçoit `null` refuse.
@@ -37,17 +33,41 @@ $$;
 revoke execute on function settle_path_space(text) from public, anon;
 grant execute on function settle_path_space(text) to authenticated;
 
-drop policy if exists receipts_select on storage.objects;
-create policy receipts_select on storage.objects
-  for select to authenticated
-  using (bucket_id = 'receipts' and is_space_member(settle_path_space(name)));
+create or replace function settle_install_receipts() returns void
+language plpgsql as $$
+begin
+  insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values (
+    'receipts', 'receipts', false, 5242880,
+    array['image/jpeg', 'image/png', 'image/webp']
+  )
+  on conflict (id) do update
+    set public = excluded.public,
+        file_size_limit = excluded.file_size_limit,
+        allowed_mime_types = excluded.allowed_mime_types;
 
-drop policy if exists receipts_insert on storage.objects;
-create policy receipts_insert on storage.objects
-  for insert to authenticated
-  with check (bucket_id = 'receipts' and can_contribute(settle_path_space(name)));
+  drop policy if exists receipts_select on storage.objects;
+  create policy receipts_select on storage.objects
+    for select to authenticated
+    using (bucket_id = 'receipts' and is_space_member(settle_path_space(name)));
 
-drop policy if exists receipts_delete on storage.objects;
-create policy receipts_delete on storage.objects
-  for delete to authenticated
-  using (bucket_id = 'receipts' and can_contribute(settle_path_space(name)));
+  drop policy if exists receipts_insert on storage.objects;
+  create policy receipts_insert on storage.objects
+    for insert to authenticated
+    with check (bucket_id = 'receipts' and can_contribute(settle_path_space(name)));
+
+  drop policy if exists receipts_delete on storage.objects;
+  create policy receipts_delete on storage.objects
+    for delete to authenticated
+    using (bucket_id = 'receipts' and can_contribute(settle_path_space(name)));
+end;
+$$;
+revoke execute on function settle_install_receipts() from public, anon, authenticated;
+
+do $$
+begin
+  if to_regclass('storage.objects') is not null then
+    perform settle_install_receipts();
+  end if;
+end;
+$$;
