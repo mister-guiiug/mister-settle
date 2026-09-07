@@ -35,7 +35,7 @@ export function authAdapter(): object | null {
         {
           get(_cible, methode) {
             return async (...args: unknown[]) => {
-              const client = (await supabase.getClient()) as {
+              const client = (await supabase.getClient()) as unknown as {
                 auth: Record<string, (...a: unknown[]) => unknown>;
               };
               const fn = client.auth[methode as string];

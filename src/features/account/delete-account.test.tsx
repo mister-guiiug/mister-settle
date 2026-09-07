@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nProvider } from '../../i18n/index.ts';
 import { supabase } from '../../backend/supabase.ts';
-import { notesStore } from '../../backend/local.ts';
+import { createLocalBackend, localDb } from '../../backend/local.ts';
 import { deleteMyAccount, memeAdresse } from './delete-account.ts';
 import { DangerZone } from './DangerZone.tsx';
 
@@ -38,7 +38,7 @@ beforeEach(() => {
   // jsdom démarre en anglais : sans cette ligne, un test qui cherche
   // « Supprimer mon compte » attend un bouton nommé « Delete my account ».
   localStorage.setItem('dwc_locale', 'fr');
-  notesStore.clear();
+  localDb.clear();
 });
 
 describe('deleteMyAccount', () => {
@@ -47,14 +47,15 @@ describe('deleteMyAccount', () => {
     const getClient = vi
       .spyOn(supabase, 'getClient')
       .mockResolvedValue(client as never);
-    notesStore.save({
-      notes: [{ id: 'note_1', text: 'écrite avant', createdAt: 'hier' }],
+    await createLocalBackend().spaces.create({
+      name: 'Écrit avant',
+      currency: 'EUR',
     });
 
     await deleteMyAccount();
 
     expect(rpc).toHaveBeenCalledWith('delete_my_account');
-    expect(notesStore.load().notes).toEqual([]);
+    expect(localDb.load().spaces).toEqual([]);
     // `scope: 'local'` : une déconnexion globale demande au serveur de
     // révoquer les jetons d'un compte qui n'existe plus, échoue, et laisse
     // l'application avec une session qui ne mène nulle part.
@@ -69,14 +70,15 @@ describe('deleteMyAccount', () => {
     const getClient = vi
       .spyOn(supabase, 'getClient')
       .mockResolvedValue(client as never);
-    notesStore.save({
-      notes: [{ id: 'note_1', text: 'intacte', createdAt: 'hier' }],
+    await createLocalBackend().spaces.create({
+      name: 'Intact',
+      currency: 'EUR',
     });
 
     await expect(deleteMyAccount()).rejects.toThrow('permission denied');
 
     expect(signOut).not.toHaveBeenCalled();
-    expect(notesStore.load().notes).toHaveLength(1);
+    expect(localDb.load().spaces).toHaveLength(1);
     getClient.mockRestore();
   });
 });
