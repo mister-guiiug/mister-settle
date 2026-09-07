@@ -1,0 +1,23 @@
+# CI déléguée au workflow réutilisable de la famille.
+#
+# Pas de `secrets: inherit` : le réutilisable déclare ce qu'il consomme, et il
+# ne consomme rien ici. Hériter lui donnerait le trousseau entier du dépôt.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  ci:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-ci.yml@v4
+    with:
+      # Les e2e du squelette tournent en CI : c'est lui qui doit prouver que la
+      # suite marche, avant qu'une app ne la copie.
+      run-e2e: true

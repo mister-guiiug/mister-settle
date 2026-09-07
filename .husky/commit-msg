@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Hook commit-msg : valide la convention Conventional Commits via commitlint.
+# À copier dans <projet>/.husky/commit-msg puis chmod +x.
+npx --no-install commitlint --edit "$1"

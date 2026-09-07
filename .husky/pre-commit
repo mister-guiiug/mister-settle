@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Hook pre-commit standard famille miss-* / mister-*.
+# À copier dans <projet>/.husky/pre-commit puis chmod +x.
+npx lint-staged

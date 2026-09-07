@@ -1,0 +1,20 @@
+# Lighthouse sur chaque PR. Seuils dans `.lighthouserc.json`.
+name: Lighthouse
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  # `pwa-lighthouse.yml` demande `pull-requests: write` (le commentaire de
+  # score sur la PR). Un appelant qui accorde moins fait échouer le run AU
+  # DÉMARRAGE, sans journal : ce dépôt n'a jamais eu un Lighthouse vert
+  # avant le 06/09/2026, et rien ne le disait — startup_failure ne bloque pas
+  # une fusion.
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-lighthouse.yml@v4

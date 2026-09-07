@@ -1,0 +1,33 @@
+# Tests pgTAP, délégués au réutilisable de la famille.
+#
+# LE SEUL ENDROIT OÙ LES MIGRATIONS S'EXÉCUTENT VRAIMENT. Le poste de
+# développement n'a pas de démon Docker qui démarre : les politiques RLS de
+# 0003 et le hook de 0004 n'y sont que RELUS. Ici, la pile jetable du runner
+# les applique depuis zéro et joue `supabase/tests/`. Jusqu'au 05/09/2026, les
+# onze assertions du squelette ne tournaient nulle part.
+#
+# AUCUN SECRET, aucune condition : tout se passe dans une base jetable, et le
+# squelette n'a pas besoin d'un projet hébergé pour prouver son schéma.
+name: Supabase tests
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/config.toml'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/supabase-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/config.toml'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pgtap:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-test.yml@v4

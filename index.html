@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      PAS DE SCRIPT ANTI-FOUC ÉCRIT ICI, et pas de balise CSP non plus.
+
+      Les deux sont posés au build par `vite.config.ts` : `themeBoot: true` de
+      `pwaSeoPlugin` injecte le script qui applique le thème avant le premier
+      rendu, et `cspPlugin` calcule la politique en hachant les scripts inline
+      du HTML final — dont celui-là. Les recopier ici, c'est se condamner à les
+      maintenir à deux endroits, et à ce que le hachage porte sur une version
+      périmée.
+
+      `__SEO_HOME_URL__` et `__SEO_LOGO_URL__` sont remplis au build par
+      `pwaSeoPlugin`. Les laisser tels quels sans le greffon publierait les
+      marqueurs en clair : c'est l'un des contrôles de `pwa-doctor`.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Starter Kit" />
+
+    <meta
+      name="description"
+      content="Squelette d'application PWA de la famille : la composition prête à cloner — fournisseurs, routes, écrans de cadre, i18n, backend à repli local."
+    />
+    <title>Mister Settle</title>
+
+    <link rel="canonical" href="__SEO_HOME_URL__" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mister Settle" />
+    <meta
+      property="og:description"
+      content="Le squelette d'application PWA de la famille miss-* / mister-*."
+    />
+    <meta property="og:url" content="__SEO_HOME_URL__" />
+    <meta property="og:image" content="__SEO_LOGO_URL__" />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

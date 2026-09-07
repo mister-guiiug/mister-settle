@@ -1,0 +1,59 @@
+# Configuration de la pile Supabase LOCALE — `supabase start`, `supabase test db`.
+#
+# Elle n'existe que pour exécuter les migrations et les tests pgTAP depuis
+# zéro : en CI (`pwa-supabase-test.yml` du socle, sur le Postgres du runner)
+# et sur un poste où Docker démarre. Le projet hébergé, lui, se configure par
+# son tableau de bord et par `supabase link` + `db push`.
+#
+# Le strict nécessaire est démarré : Postgres et GoTrue. Les tests écrivent
+# en SQL et se font passer pour un utilisateur par `set local role` — ils
+# n'ont besoin ni de l'API REST, ni du studio, ni du stockage.
+project_id = "mister-settle"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = false
+
+[storage]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:5240"
+additional_redirect_urls = ["http://localhost:5240"]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+# LE RÔLE DANS LE JETON. Le hook créé par `0004_role_dans_le_jeton.sql` doit
+# être ACTIVÉ : ici pour la pile locale, et sur le projet hébergé par le
+# tableau de bord (Authentication → Hooks) ou l'API de gestion. Sans cette
+# activation, le jeton reste muet et `useRole()` ne voit jamais un
+# administrateur — un défaut que rien ne signale.
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"

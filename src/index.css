@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+@import '@mister-guiiug/dev-pwa-config/tailwind-preset.css';
+
+/*
+ * `components.css` EST LE PRÉREQUIS DE TOUTE ADOPTION DE `/react`.
+ *
+ * Les composants du socle ne posent que des attributs `data-dwc` : ils sont
+ * volontairement NUS. Sans cette feuille, `Button`, `Card`, `Sheet` ou
+ * `BottomNav` compilent, les tests passent, le lint est vert — et l'écran est
+ * cassé. Quinze apps sur dix-sept ont fini par la prendre ; celles qui ne
+ * l'avaient pas ont payé la dispense en défauts d'accessibilité.
+ *
+ * Tout y est en `@layer components` : le CSS non layered de ce fichier
+ * l'emporte de plein droit, sans `!important`.
+ */
+@import '@mister-guiiug/dev-pwa-config/components.css';
+
+/*
+ * LA PALETTE PEINT LES JETONS DU SOCLE, elle ne vit pas à côté d'eux.
+ *
+ * `tokens.css` définit des rôles sémantiques (`--dwc-surface`, `--dwc-border`,
+ * `--dwc-text`…) que les composants consomment. Une app change son identité en
+ * repeignant ces rôles — jamais en redéclarant ses propres variables à côté,
+ * ce qui laisserait les composants du socle sur les valeurs par défaut et
+ * ferait deux thèmes qui divergent en silence.
+ */
+@theme {
+  --color-primary: #3b6ea5;
+  --color-primary-soft: #dce8f5;
+  --radius-card: 0.875rem;
+}
+
+:root {
+  color-scheme: light;
+
+  --dwc-bg: #f7f8fa;
+  --dwc-surface: #ffffff;
+  --dwc-surface-2: #eef1f5;
+  --dwc-text: #131720;
+  --dwc-text-soft: #5a6472;
+  --dwc-border: #d9dfe7;
+  --dwc-primary: #3b6ea5;
+  --dwc-primary-contrast: #ffffff;
+  --dwc-danger: #b3261e;
+  --dwc-success: #1b6b3a;
+  --dwc-warning: #8a5a00;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --dwc-bg: #0f1115;
+  --dwc-surface: #171b22;
+  --dwc-surface-2: #1f242d;
+  --dwc-text: #e8ecf2;
+  --dwc-text-soft: #a3adbb;
+  --dwc-border: #2c333d;
+  --dwc-primary: #7fb0e0;
+  --dwc-primary-contrast: #0f1115;
+  --dwc-danger: #f2b8b5;
+  --dwc-success: #7fd6a0;
+  --dwc-warning: #e8c07d;
+}
+
+body {
+  margin: 0;
+  background: var(--dwc-bg);
+  color: var(--dwc-text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+/*
+ * LA BARRE BASSE EST COLLÉE PAR UNE PROP, PAS PAR UNE RÈGLE.
+ *
+ * Jusqu'au socle 4.2, cette feuille collait la barre au bas de la fenêtre
+ * (`position: fixed`) et réservait sa hauteur sous le contenu — et huit dépôts
+ * du parc portaient la même règle, recopiée. Depuis 4.3.0, le choix se fait là
+ * où la mise en page se lit, dans `App.tsx` : `<BottomNav placement="fixed">`
+ * colle la barre, `<PageContainer reserve="bottom-nav">` dégage la place
+ * dessous, zone sûre iOS comprise. Ce fichier n'a plus rien à dire sur elle.
+ */

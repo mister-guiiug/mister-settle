@@ -1,0 +1,28 @@
+# Déploiement GitHub Pages, délégué au réutilisable de la famille.
+#
+# PAS DE `concurrency` ICI : le réutilisable déclare déjà le sien (`group:
+# pages`). Redoublé dans l'appelant, GitHub refuse le fichier AVANT de créer un
+# seul job, sans autre message que « workflow file issue ».
+#
+# Aucune `build-env` ni `required-env` : ce squelette démarre sans
+# configuration, et c'est une propriété qu'il doit garder. Une app qui en a
+# besoin les ajoute ici, les `VITE_*` lues dans `vars` — jamais dans `secrets`,
+# que Vite copie de toute façon dans le bundle.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  packages: read
+
+jobs:
+  deploy:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v4
+    with:
+      use-base-path: true

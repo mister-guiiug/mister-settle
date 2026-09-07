@@ -1,0 +1,39 @@
+# Anti-pause du projet Supabase Free.
+#
+# POURQUOI CE FICHIER EXISTE DÈS LA NAISSANCE. Un projet Free s'endort après
+# sept jours sans requête, et une application dont le déploiement dépend d'une
+# migration cesse alors de se déployer — CI verte, et personne n'est prévenu.
+# C'est arrivé à miss-carbook le 29/08/2026. Le socle publiait ce réutilisable
+# depuis longtemps : au relevé du 02/09, AUCUNE des huit applications Supabase
+# ne l'appelait.
+#
+# Les deux valeurs sont lues dans les VARIABLES du dépôt, pas dans ses
+# secrets : Vite les copie de toute façon dans le bundle publié, et les ranger
+# en secret n'y masque que les journaux de CI. Le réutilisable les déclare en
+# entrées de type secret — une telle entrée accepte n'importe quelle chaîne, y
+# compris une variable, et c'est ce qui permet de respecter la règle de la
+# famille sans modifier le workflow appelé.
+#
+# Prérequis, et le premier est celui qu'on oublie : une table `keep_alive` doit
+# exister, sinon le ping répond 404 en silence (cf. `templates/supabase/keep-alive.sql`
+# du socle).
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '0 5 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    # Même garde que les migrations : sans projet, le cron échouerait tous les
+    # trois jours. Un rouge périodique qu'on apprend à ignorer est pire que
+    # pas de surveillance du tout.
+    if: vars.VITE_SUPABASE_URL != ''
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-keepalive.yml@v4
+    secrets:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}

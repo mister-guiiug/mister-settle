@@ -1,0 +1,38 @@
+# Migrations Supabase, déléguées au workflow réutilisable de la famille.
+#
+# Déclenché par un changement de `supabase/migrations/**` sur `main`, et
+# jamais annulé en vol : couper une migration à mi-chemin laisse une base dans
+# un état que personne n'a décrit.
+#
+# CONDITIONNÉ À LA VARIABLE QUI ACTIVE DÉJÀ LE BACKEND, et pas seulement aux
+# secrets. Le réutilisable ÉCHOUE quand ses trois entrées manquent — c'est le
+# bon comportement pour une application qui a un projet, et le mauvais pour un
+# dépôt qui n'en a pas : un workflow rouge à chaque poussée est exactement le
+# bruit qui fait cesser de lire la CI.
+#
+# `vars.VITE_SUPABASE_URL` est la même valeur qui fait basculer l'application
+# sur le backend distant. Une seule chose à poser pour tout activer, et rien à
+# se rappeler : le squelette saute la migration, une application la reçoit.
+name: Supabase migrations
+
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    if: vars.VITE_SUPABASE_URL != ''
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-migrate.yml@v4
+    secrets:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      # La référence du projet est PUBLIQUE — elle est dans l'URL. Elle vit en
+      # `vars`, et le slot déclaré en secret par le réutilisable accepte cette
+      # expression, comme le keep-alive le fait pour l'URL et la clé anonyme.
+      # Deux secrets à poser, pas trois (PARAMETRAGE.md du socle).
+      SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
