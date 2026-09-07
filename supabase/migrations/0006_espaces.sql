@@ -184,7 +184,11 @@ begin
     raise exception 'la propriété se transfère par transfer_space_ownership'
       using errcode = '42501';
   end if;
-  if tg_op = 'DELETE' and old.role = 'owner' then
+  -- LA CASCADE N'EST PAS UN DÉPART. Quand le propriétaire supprime l'espace,
+  -- la clé étrangère efface ses adhésions après lui : l'espace n'existe déjà
+  -- plus, et ce garde n'a rien à retenir.
+  if tg_op = 'DELETE' and old.role = 'owner'
+     and exists (select 1 from expense_spaces where id = old.space_id) then
     raise exception 'le propriétaire ne quitte pas son espace : transférer d''abord'
       using errcode = '42501';
   end if;
