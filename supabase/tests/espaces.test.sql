@@ -220,9 +220,9 @@ select throws_ok(
   'mais pas au nom d’un autre : l’auteur est vérifié'
 );
 select lives_ok(
-  $ update space_memberships set role = 'admin'
+  $$ update space_memberships set role = 'admin'
      where space_id = 'e0000000-0000-4000-8000-000000000001'
-       and user_id = '22222222-2222-2222-2222-222222222222' $,
+       and user_id = '22222222-2222-2222-2222-222222222222' $$,
   'se promouvoir ne lève pas…'
 );
 reset role;
