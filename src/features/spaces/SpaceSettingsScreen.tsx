@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { TextField } from '@mister-guiiug/dev-pwa-config/react/field';
@@ -135,6 +135,18 @@ function SpaceSettings({ space }: { space: Space }) {
           </div>
         </form>
       </Card>
+
+      {rights.admin ? (
+        <Card>
+          <CardHeader
+            title={t('invitations.invite')}
+            subtitle={t('invitations.inviteHint')}
+          />
+          <Link to={`/e/${space.id}/invitations`} className="no-underline">
+            <Button variant="outline">{t('invitations.title')}</Button>
+          </Link>
+        </Card>
+      ) : null}
 
       <CategoriesCard
         space={space}
