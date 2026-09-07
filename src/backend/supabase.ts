@@ -1259,18 +1259,27 @@ export function createSupabaseBackend(): Backend {
       },
       remove: async id => {
         const db = await client();
-        const { data } = await db
+        // LA LIGNE D'ABORD — c'est elle que la RLS juge (auteur ou
+        // administrateur, 0008) — puis l'objet : l'inverse laisserait un
+        // fichier orphelin sur un refus.
+        const { data, error } = await db
           .from('attachments')
-          .select('storage_path')
+          .delete()
           .eq('id', id)
+          .select('storage_path')
           .maybeSingle();
+        if (error) fail('suppression d’un justificatif', error);
         const row = z
           .object({ storage_path: z.string() })
           .nullable()
           .parse(data);
-        if (row) await db.storage.from('receipts').remove([row.storage_path]);
-        const { error } = await db.from('attachments').delete().eq('id', id);
-        if (error) fail('suppression d’un justificatif', error);
+        if (!row)
+          throw new BackendError('forbidden', 'justificatif hors de portée');
+        const { error: storageError } = await db.storage
+          .from('receipts')
+          .remove([row.storage_path]);
+        if (storageError)
+          fail('suppression du fichier', { message: storageError.message });
       },
     },
   };

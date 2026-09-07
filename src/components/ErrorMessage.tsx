@@ -12,6 +12,8 @@ const KNOWN_DETAILS = [
   'foreign-member',
   'same-person',
   'amount-not-positive',
+  'image-type',
+  'image-size',
 ] as const;
 type KnownDetail = (typeof KNOWN_DETAILS)[number];
 const isKnownDetail = (detail: string): detail is KnownDetail =>
