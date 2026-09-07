@@ -4,10 +4,10 @@
 # pages`). Redoublé dans l'appelant, GitHub refuse le fichier AVANT de créer un
 # seul job, sans autre message que « workflow file issue ».
 #
-# Aucune `build-env` ni `required-env` : ce squelette démarre sans
-# configuration, et c'est une propriété qu'il doit garder. Une app qui en a
-# besoin les ajoute ici, les `VITE_*` lues dans `vars` — jamais dans `secrets`,
-# que Vite copie de toute façon dans le bundle.
+# LES VARIABLES DE LA BASE PARTAGÉE passent par `build-env`, lues dans `vars`
+# — jamais dans `secrets`, que Vite copie de toute façon dans le bundle. Pas
+# de `required-env` : sans elles, l'application démarre quand même, sur
+# l'appareil (ADR 0004) — c'est une propriété qu'elle doit garder.
 name: Deploy
 
 on:
@@ -26,3 +26,6 @@ jobs:
     uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v4
     with:
       use-base-path: true
+      build-env: |
+        VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}

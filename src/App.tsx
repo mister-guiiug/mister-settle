@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import {
   BrowserRouter,
   Link,
@@ -27,8 +27,12 @@ import { ObservabilityBoundary } from '@mister-guiiug/dev-pwa-config/react/error
 import { ConnectionBanner } from '@mister-guiiug/dev-pwa-config/react/connection-banner';
 import { AppUpdates } from '@mister-guiiug/dev-pwa-config/react/app-updates';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
+import { SyncStatusBadge } from '@mister-guiiug/dev-pwa-config/react/sync-status-badge';
+import { useOnline } from '@mister-guiiug/dev-pwa-config/react/use-online';
 import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
+import { isRemote } from './backend/index.ts';
+import { syncStatusOf, useSyncState } from './backend/sync-state.ts';
 import { HomeScreen } from './features/spaces/HomeScreen.tsx';
 import { SpaceShell } from './features/spaces/SpaceShell.tsx';
 import { useSpaces } from './features/spaces/store.ts';
@@ -117,6 +121,11 @@ const ActivityScreen = lazy(() =>
     default: m.ActivityScreen,
   }))
 );
+const OfflineScreen = lazy(() =>
+  import('./features/sync/OfflineScreen.tsx').then(m => ({
+    default: m.OfflineScreen,
+  }))
+);
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -132,6 +141,15 @@ const ActivityScreen = lazy(() =>
 function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+  // Le réseau vu par le navigateur alimente l'état de synchronisation : la
+  // cache de lecture et la file s'y réfèrent hors de tout rendu (ADR 0015).
+  const online = useOnline();
+  const setOnline = useSyncState(state => state.setOnline);
+  const pending = useSyncState(state => state.pending);
+  const dead = useSyncState(state => state.dead);
+  useEffect(() => {
+    setOnline(online);
+  }, [online, setOnline]);
   // `end: false` PLUTÔT QU'UN JOKER DE FIN DE CHEMIN : le docteur du socle lit
   // le source sans ses commentaires, et une barre suivie d'une étoile dans une
   // chaîne ouvre pour lui un commentaire bloc — qui avale les routes jusqu'au
@@ -205,6 +223,7 @@ function Shell() {
     if (matchPath('/espaces/nouveau', pathname)) return t('newSpace.title');
     if (matchPath('/reglages', pathname)) return t('settings.title');
     if (matchPath('/compte', pathname)) return t('account.title');
+    if (matchPath('/hors-ligne', pathname)) return t('offline.title');
     if (matchPath('/a-propos', pathname)) return t('about.title');
     if (matchPath('/e/:spaceId/depenses', pathname)) return t('expenses.title');
     if (matchPath('/e/:spaceId/depenses/nouvelle', pathname))
@@ -253,7 +272,29 @@ function Shell() {
 
       <AppHeader
         title={title}
-        actions={<ThemeToggle />}
+        actions={
+          <>
+            {isRemote ? (
+              <Link
+                to="/hors-ligne"
+                aria-label={t('sync.badge')}
+                className="no-underline"
+              >
+                <SyncStatusBadge
+                  status={syncStatusOf({ online, pending, dead })}
+                  pending={pending}
+                  labels={{
+                    synced: t('sync.status.synced'),
+                    pending: t('sync.status.pending'),
+                    offline: t('sync.status.offline'),
+                    error: t('sync.status.error'),
+                  }}
+                />
+              </Link>
+            ) : null}
+            <ThemeToggle />
+          </>
+        }
         {...(backHref ? { backHref } : {})}
         linkComponent={Link}
         hrefProp="to"
@@ -301,6 +342,7 @@ function Shell() {
             />
             <Route path="/reglages" element={<SettingsScreen />} />
             <Route path="/compte" element={<AccountScreen />} />
+            <Route path="/hors-ligne" element={<OfflineScreen />} />
             <Route path="/a-propos" element={<AboutScreen />} />
             {/* Le repli de route rend l'accueil ; le repli de SERVEUR est le
               `404.html` posé par `spaFallbackPlugin`. */}

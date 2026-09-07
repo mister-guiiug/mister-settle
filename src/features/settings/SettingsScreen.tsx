@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
@@ -107,6 +108,16 @@ export function SettingsScreen() {
             </li>
           ))}
         </ul>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title={t('settings.offline')}
+          subtitle={t('settings.offlineHint')}
+        />
+        <Link to="/hors-ligne" className="no-underline">
+          <Button variant="outline">{t('settings.offlineOpen')}</Button>
+        </Link>
       </Card>
 
       {!isRemote ? (
