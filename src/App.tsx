@@ -12,6 +12,7 @@ import {
   Info,
   Activity,
   ArrowLeftRight,
+  BarChart3,
   Receipt,
   Scale,
   Settings,
@@ -126,6 +127,11 @@ const OfflineScreen = lazy(() =>
     default: m.OfflineScreen,
   }))
 );
+const StatsScreen = lazy(() =>
+  import('./features/stats/StatsScreen.tsx').then(m => ({
+    default: m.StatsScreen,
+  }))
+);
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -211,6 +217,11 @@ function Shell() {
           icon: <Activity aria-hidden="true" />,
         },
         {
+          href: `/e/${spaceId}/statistiques`,
+          label: t('nav.stats'),
+          icon: <BarChart3 aria-hidden="true" />,
+        },
+        {
           href: `/e/${spaceId}/reglages`,
           label: t('nav.settings'),
           icon: <SlidersHorizontal aria-hidden="true" />,
@@ -238,6 +249,8 @@ function Shell() {
     if (matchPath('/e/:spaceId/invitations', pathname))
       return t('invitations.title');
     if (matchPath('/e/:spaceId/activite', pathname)) return t('activity.title');
+    if (matchPath('/e/:spaceId/statistiques', pathname))
+      return t('stats.title');
     if (matchPath('/e/:spaceId/soldes', pathname)) return t('balances.title');
     if (matchPath('/e/:spaceId/remboursements', pathname))
       return t('settlements.title');
@@ -331,6 +344,7 @@ function Shell() {
               <Route path="soldes" element={<BalancesScreen />} />
               <Route path="remboursements" element={<SettlementsScreen />} />
               <Route path="activite" element={<ActivityScreen />} />
+              <Route path="statistiques" element={<StatsScreen />} />
               <Route path="personnes" element={<ParticipantsScreen />} />
               <Route path="regroupements" element={<GroupsScreen />} />
               <Route path="reglages" element={<SpaceSettingsScreen />} />

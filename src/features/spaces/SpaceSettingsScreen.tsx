@@ -148,6 +148,16 @@ function SpaceSettings({ space }: { space: Space }) {
         </Card>
       ) : null}
 
+      <Card>
+        <CardHeader
+          title={t('spaceSettings.stats')}
+          subtitle={t('spaceSettings.statsHint')}
+        />
+        <Link to={`/e/${space.id}/statistiques`} className="no-underline">
+          <Button variant="outline">{t('stats.title')}</Button>
+        </Link>
+      </Card>
+
       <CategoriesCard
         space={space}
         editable={rights.admin && !space.archivedAt}
