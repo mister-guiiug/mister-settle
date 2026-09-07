@@ -15,6 +15,7 @@ import { isRemote } from '../../backend/index.ts';
 import type { Space } from '../../backend/ports.ts';
 import { useSpaces } from './store.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
+import { Fab } from '../../components/Fab.tsx';
 
 /**
  * L'ACCUEIL : mes espaces, ouverts d'abord, archivés dessous.
@@ -122,6 +123,12 @@ export function HomeScreen() {
       ) : null}
 
       <AppFooter repoUrl={REPO_URL} issues className="mt-8" />
+
+      {/*
+        Le geste principal de cet écran, sous le pouce. Le bouton d'en-tête
+        reste : il porte le mot « Créer un espace », celui-ci porte le geste.
+      */}
+      <Fab to="/espaces/nouveau" label={t('spaces.create')} />
     </>
   );
 }
