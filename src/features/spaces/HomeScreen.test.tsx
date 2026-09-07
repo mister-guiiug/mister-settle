@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import { AuthProvider } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { I18nProvider } from '../../i18n/index.ts';
 import { backend } from '../../backend/index.ts';
 import { localDb } from '../../backend/local.ts';
@@ -17,7 +18,9 @@ import { HomeScreen } from './HomeScreen.tsx';
 function Wrapper({ children }: { children: ReactNode }) {
   return (
     <I18nProvider>
-      <MemoryRouter>{children}</MemoryRouter>
+      <AuthProvider adapter={null}>
+        <MemoryRouter>{children}</MemoryRouter>
+      </AuthProvider>
     </I18nProvider>
   );
 }

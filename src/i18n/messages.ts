@@ -46,6 +46,10 @@ const fr = {
     unknown: 'Une erreur est survenue : {detail}',
   },
   spaces: {
+    signInTitle: 'Connectez-vous pour retrouver vos espaces.',
+    signInBody:
+      'Cette application tourne avec une base partagée : vos espaces vous suivent d’un appareil à l’autre, et personne d’autre ne les voit.',
+    signInAction: 'Se connecter',
     title: 'Mes espaces',
     loading: 'Chargement des espaces',
     empty: 'Aucun espace pour le moment.',
@@ -691,6 +695,10 @@ const en: typeof fr = {
     unknown: 'Something went wrong: {detail}',
   },
   spaces: {
+    signInTitle: 'Sign in to find your spaces.',
+    signInBody:
+      'This app runs on a shared database: your spaces follow you across devices, and nobody else sees them.',
+    signInAction: 'Sign in',
     title: 'My spaces',
     loading: 'Loading spaces',
     empty: 'No space yet.',
