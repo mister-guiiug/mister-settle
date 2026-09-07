@@ -13,6 +13,7 @@ import {
 import { ShareButton } from '@mister-guiiug/dev-pwa-config/react/share-button';
 import { Sheet } from '@mister-guiiug/dev-pwa-config/react/sheet';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
+import { useActionGuard } from '@mister-guiiug/dev-pwa-config/react/use-action-guard';
 import { useI18n } from '../../i18n/index.ts';
 import { isRemote } from '../../backend/index.ts';
 import type { Invitation, Participant, Space } from '../../backend/ports.ts';
@@ -50,6 +51,11 @@ export function InvitationsScreen() {
     url: string;
   } | null>(null);
   const [revoking, setRevoking] = useState<Invitation | null>(null);
+  // Inviter est un geste SERVEUR : sans réseau, le bouton le dit (ADR 0015).
+  const guard = useActionGuard({
+    online: isRemote,
+    offlineMessage: t('sync.needsNetwork'),
+  });
 
   if (!space) return null;
   if (!isRemote) {
@@ -101,7 +107,9 @@ export function InvitationsScreen() {
       <div>
         <Button
           variant="primary"
+          aria-disabled={guard.disabled}
           onClick={() => {
+            if (!guard.allowed) return;
             clearError();
             setCreating(true);
           }}
@@ -109,6 +117,11 @@ export function InvitationsScreen() {
           <Plus size={18} aria-hidden="true" />
           {t('invitations.create')}
         </Button>
+        {!guard.allowed && guard.reason ? (
+          <p className="m-0 mt-1 text-xs" style={soft}>
+            {guard.reason}
+          </p>
+        ) : null}
       </div>
 
       {error && !creating ? (

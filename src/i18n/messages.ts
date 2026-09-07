@@ -499,6 +499,43 @@ const fr = {
     membershipTransferred: 'Propriété de l’espace transférée',
     generic: '{entity} : {action}',
   },
+  sync: {
+    status: {
+      synced: 'Synchronisé',
+      pending: 'En attente',
+      offline: 'Hors ligne',
+      error: 'Refus à traiter',
+    },
+    badge: 'Synchronisation',
+    needsNetwork:
+      'Ce geste demande le réseau : c’est la base qui décide, pas l’appareil.',
+    staleBanner:
+      'Copie du {date} — sans réseau, l’espace se lit tel qu’il était.',
+    queued: 'Dépense gardée sur l’appareil : elle partira au retour du réseau.',
+  },
+  offline: {
+    title: 'Hors ligne',
+    intro:
+      'Ce que l’application fait sans réseau, et ce qu’elle garde pour plus tard.',
+    works: 'Sans réseau, vous pouvez :',
+    worksRead: 'relire les espaces déjà ouverts — une copie, datée ;',
+    worksDraft: 'préparer une dépense — le brouillon reste sur l’appareil ;',
+    worksCreate:
+      'créer une dépense — elle attend le réseau, puis part une seule fois.',
+    blocked:
+      'Il faut le réseau pour valider une répartition, déclarer un remboursement ou inviter : c’est la base qui décide.',
+    localAll: 'Ici, tout vit sur cet appareil : rien n’attend le réseau.',
+    pending: 'En attente de réseau',
+    none: 'Rien en attente.',
+    dead: 'Refusées par la base',
+    deadHint:
+      'La base a refusé — droits, version périmée, saisie. Rouvrez pour corriger, ou abandonnez.',
+    entry: '{label} · {space} · {when}',
+    reopen: 'Rouvrir dans l’assistant',
+    drop: 'Abandonner',
+    retry: 'Réessayer tout',
+    reason: 'Motif : {error}',
+  },
   spaceSettings: {
     title: 'Réglages de l’espace',
     identity: 'Identité',
@@ -517,6 +554,10 @@ const fr = {
     adminOnly: 'Réservé aux administrateurs de l’espace.',
   },
   settings: {
+    offline: 'Hors ligne et synchronisation',
+    offlineHint:
+      'Ce qui marche sans réseau, ce qui attend, ce qui a été refusé.',
+    offlineOpen: 'Voir',
     title: 'Réglages',
     appearance: 'Apparence',
     language: 'Langue',
@@ -1053,6 +1094,44 @@ const en: typeof fr = {
     membershipTransferred: 'Space ownership transferred',
     generic: '{entity}: {action}',
   },
+  sync: {
+    status: {
+      synced: 'Synced',
+      pending: 'Pending',
+      offline: 'Offline',
+      error: 'Rejections to handle',
+    },
+    badge: 'Sync',
+    needsNetwork:
+      'This needs the network: the database decides, not the device.',
+    staleBanner:
+      'Copy from {date} — without network, the space reads as it was.',
+    queued:
+      'Expense kept on the device: it will leave when the network is back.',
+  },
+  offline: {
+    title: 'Offline',
+    intro: 'What the app does without network, and what it keeps for later.',
+    works: 'Without network, you can:',
+    worksRead: 'reread spaces already opened — a dated copy;',
+    worksDraft: 'prepare an expense — the draft stays on the device;',
+    worksCreate:
+      'create an expense — it waits for the network, then leaves once.',
+    blocked:
+      'The network is required to validate a split, declare a settlement or invite: the database decides.',
+    localAll:
+      'Here, everything lives on this device: nothing waits for the network.',
+    pending: 'Waiting for network',
+    none: 'Nothing pending.',
+    dead: 'Rejected by the database',
+    deadHint:
+      'The database refused — rights, stale version, input. Reopen to fix, or drop.',
+    entry: '{label} · {space} · {when}',
+    reopen: 'Reopen in the assistant',
+    drop: 'Drop',
+    retry: 'Retry all',
+    reason: 'Reason: {error}',
+  },
   spaceSettings: {
     title: 'Space settings',
     identity: 'Identity',
@@ -1071,6 +1150,9 @@ const en: typeof fr = {
     adminOnly: 'Admins of the space only.',
   },
   settings: {
+    offline: 'Offline and sync',
+    offlineHint: 'What works without network, what waits, what was rejected.',
+    offlineOpen: 'Open',
     title: 'Settings',
     appearance: 'Appearance',
     language: 'Language',

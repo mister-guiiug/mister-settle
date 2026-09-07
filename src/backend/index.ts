@@ -1,7 +1,10 @@
 import { createBackendSelector } from '@mister-guiiug/dev-pwa-config/backend';
+import { createIdb } from '@mister-guiiug/dev-pwa-config/idb';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
+import { withReadCache } from './cached.ts';
 import { createLocalBackend } from './local.ts';
 import type { Backend } from './ports.ts';
+import { useSyncState } from './sync-state.ts';
 
 const log = createLogger('backend');
 
@@ -15,7 +18,20 @@ const log = createLogger('backend');
 function createLazySupabaseBackend(): Backend {
   let loaded: Promise<Backend> | null = null;
   const load = () => {
-    loaded ??= import('./supabase.ts').then(m => m.createSupabaseBackend());
+    // Les lectures gardent leur dernière réponse dans IndexedDB et la
+    // resservent quand le réseau manque (ADR 0015) ; l'état de synchronisation
+    // apprend qu'on lit une copie, et de quand.
+    loaded ??= import('./supabase.ts').then(m =>
+      withReadCache(
+        m.createSupabaseBackend(),
+        createIdb('mister-settle-cache'),
+        {
+          onStale: at => useSyncState.getState().markStale(at),
+          onFresh: () => useSyncState.getState().markFresh(),
+          isOnline: () => useSyncState.getState().online,
+        }
+      )
+    );
     return loaded;
   };
   const relay = <K extends keyof Backend>(port: K): Backend[K] =>

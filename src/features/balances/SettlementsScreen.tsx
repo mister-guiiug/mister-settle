@@ -12,7 +12,9 @@ import {
 import { Sheet } from '@mister-guiiug/dev-pwa-config/react/sheet';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useToast } from '@mister-guiiug/dev-pwa-config/react/toast';
+import { useActionGuard } from '@mister-guiiug/dev-pwa-config/react/use-action-guard';
 import { useI18n } from '../../i18n/index.ts';
+import { isRemote } from '../../backend/index.ts';
 import type {
   Participant,
   Settlement,
@@ -60,6 +62,12 @@ export function SettlementsScreen() {
   const recordSettlement = useExpenses(state => state.recordSettlement);
   const cancelSettlement = useExpenses(state => state.cancelSettlement);
   const [declaring, setDeclaring] = useState<Transfer | 'manual' | null>(null);
+  // Déclarer est un geste SERVEUR : sans réseau, le bouton le dit au lieu
+  // de se cacher (ADR 0015). Sur l'appareil seul, rien à attendre.
+  const guard = useActionGuard({
+    online: isRemote,
+    offlineMessage: t('sync.needsNetwork'),
+  });
 
   if (!space) return null;
   if (!peopleReady || !expensesReady) {
@@ -128,7 +136,9 @@ export function SettlementsScreen() {
                   <Button
                     size="sm"
                     variant="outline"
+                    aria-disabled={guard.disabled}
                     onClick={() => {
+                      if (!guard.allowed) return;
                       clearError();
                       setDeclaring(transfer);
                     }}
@@ -146,7 +156,9 @@ export function SettlementsScreen() {
         <div>
           <Button
             variant="primary"
+            aria-disabled={guard.disabled}
             onClick={() => {
+              if (!guard.allowed) return;
               clearError();
               setDeclaring('manual');
             }}
@@ -154,6 +166,11 @@ export function SettlementsScreen() {
             <Plus size={18} aria-hidden="true" />
             {t('settlements.declareManual')}
           </Button>
+          {!guard.allowed && guard.reason ? (
+            <p className="m-0 mt-1 text-xs" style={soft}>
+              {guard.reason}
+            </p>
+          ) : null}
         </div>
       ) : (
         <p className="m-0 text-xs" style={soft}>

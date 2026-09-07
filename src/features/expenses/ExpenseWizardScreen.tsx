@@ -5,12 +5,15 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
+import { createUuid } from '@mister-guiiug/dev-pwa-config/id';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useToast } from '@mister-guiiug/dev-pwa-config/react/toast';
+import { useActionGuard } from '@mister-guiiug/dev-pwa-config/react/use-action-guard';
 import { useI18n } from '../../i18n/index.ts';
+import { isRemote } from '../../backend/index.ts';
 import type {
   Category,
   Expense,
@@ -19,6 +22,8 @@ import type {
   Settlement,
   Space,
 } from '../../backend/ports.ts';
+import { expenseQueue } from '../../backend/sync.ts';
+import { useSyncState } from '../../backend/sync-state.ts';
 import { computeBalances } from '../../domain/balances.ts';
 import { todayIso } from '../../domain/dates.ts';
 import {
@@ -44,6 +49,7 @@ import {
   useMyUserId,
 } from '../spaces/useCurrentSpace.ts';
 import { usePeople, usePeopleOf } from '../people/store.ts';
+import { clearDraft, readDraft, writeDraft } from './draft-store.ts';
 import { StepSummary } from './StepSummary.tsx';
 import { StepWhat } from './StepWhat.tsx';
 import { StepWho } from './StepWho.tsx';
@@ -59,7 +65,8 @@ const soft = { color: 'var(--dwc-text-soft)' } as const;
  * pour qui ; synthèse et validation. Le même assistant crée, modifie,
  * duplique (`?depuis=`) et revalide (`/repartition`, qui ouvre au dernier
  * pas). L'écran charge ce qu'il faut, puis MONTE le formulaire d'un coup
- * (`key`) : ses champs naissent de la dépense, sans effet qui recopie.
+ * (`key`) : ses champs naissent de la dépense — ou du brouillon local, pour
+ * une dépense neuve (ADR 0015) — sans effet qui recopie.
  */
 export function ExpenseWizardScreen({ mode }: { mode: WizardMode }) {
   const { t } = useI18n();
@@ -107,19 +114,22 @@ export function ExpenseWizardScreen({ mode }: { mode: WizardMode }) {
   }
   const today = todayIso();
   const mine = active.find(p => p.linkedUserId === me) ?? active[0];
-  const initial = source
-    ? formFromExpense(
-        source,
-        ctx,
-        mode === 'new' ? { duplicate: true, today } : {}
-      )
-    : emptyForm({
-        spaceId: space.id,
-        currency: space.currency,
-        today,
-        payerId: mine?.id ?? null,
-        participantIds: ctx.orderedParticipantIds,
-      });
+  const draft = mode === 'new' && !source ? readDraft(space.id) : null;
+  const initial =
+    draft ??
+    (source
+      ? formFromExpense(
+          source,
+          ctx,
+          mode === 'new' ? { duplicate: true, today } : {}
+        )
+      : emptyForm({
+          spaceId: space.id,
+          currency: space.currency,
+          today,
+          payerId: mine?.id ?? null,
+          participantIds: ctx.orderedParticipantIds,
+        }));
 
   return (
     <Wizard
@@ -169,12 +179,26 @@ function Wizard({
   const validate = useExpenses(state => state.validate);
   const error = useExpenses(state => state.error);
   const clearError = useExpenses(state => state.clearError);
-  const [form, setForm] = useState(initial);
+  const online = useSyncState(state => state.online);
+  // Valider est un geste SERVEUR (R9) : sans réseau, le bouton le dit au lieu
+  // de se cacher (ADR 0015). Sur l'appareil seul, rien à attendre.
+  const guard = useActionGuard({
+    online: isRemote,
+    offlineMessage: t('sync.needsNetwork'),
+  });
+  const [form, setFormState] = useState(initial);
   const [step, setStep] = useState<Step>(mode === 'split' ? 3 : 1);
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState(false);
 
+  const isNew = mode === 'new' && !source;
   const listPath = `/e/${space.id}/depenses`;
+  // Une dépense neuve laisse un brouillon sur l'appareil à chaque frappe :
+  // il survit à une coupure, un rechargement, une sortie (ADR 0015, 2).
+  const setForm = (next: ExpenseForm) => {
+    setFormState(next);
+    if (isNew) writeDraft(next);
+  };
   const total = totalOf(form, ctx);
   const step1Ok =
     form.label.trim() !== '' &&
@@ -206,17 +230,47 @@ function Wizard({
     calculationFingerprint(expenseInputFromLines(toPortInput(form, ctx))) !==
       originalFingerprint;
 
+  // Sans réseau, une CRÉATION attend dans la file : identifiant engendré ici,
+  // rejeu idempotent, une seule fois (ADR 0015, 3).
+  const enqueue = () => {
+    const input = toPortInput(form, ctx);
+    const id = createUuid();
+    const entry = expenseQueue().enqueue({
+      input: { ...input, id },
+      spaceId: space.id,
+      label: input.label,
+      form,
+    });
+    if (!entry) return false;
+    clearDraft(space.id);
+    toast.success(t('sync.queued'));
+    void navigate(listPath, { replace: true });
+    return true;
+  };
+
   const persist = async (thenValidate: boolean) => {
     setBusy(true);
     clearError();
+    if (isRemote && isNew && !online && !thenValidate) {
+      enqueue();
+      setBusy(false);
+      return;
+    }
     const result = await save(
       toPortInput(form, ctx),
       source ? source.version : null
     );
     if (!result) {
+      // Le réseau est tombé entre-temps : la création rejoint la file.
+      const failure = useExpenses.getState().error;
+      if (isRemote && isNew && !thenValidate && failure?.code === 'network') {
+        clearError();
+        enqueue();
+      }
       setBusy(false);
       return;
     }
+    if (isNew) clearDraft(space.id);
     if (thenValidate) {
       const validated = await validate(result.id, result.version);
       setBusy(false);
@@ -242,6 +296,9 @@ function Wizard({
   };
   const previous = () => setStep(step === 3 ? 2 : 1);
   const cancelHref = source ? `${listPath}/${source.id}` : listPath;
+  const cancel = () => {
+    if (isNew) clearDraft(space.id);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -291,7 +348,7 @@ function Wizard({
             {t('wizard.back')}
           </Button>
         ) : (
-          <Link to={cancelHref} className="no-underline">
+          <Link to={cancelHref} className="no-underline" onClick={cancel}>
             <Button variant="ghost">{t('wizard.cancel')}</Button>
           </Link>
         )}
@@ -300,24 +357,31 @@ function Wizard({
             {t('wizard.next')}
           </Button>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              loading={busy}
-              onClick={() => void persist(false)}
-            >
-              {t('wizard.saveDraft')}
-            </Button>
-            <Button
-              variant="primary"
-              loading={busy}
-              aria-disabled={blocking}
-              onClick={() => {
-                if (!blocking) void persist(true);
-              }}
-            >
-              {t('wizard.validate')}
-            </Button>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                loading={busy}
+                onClick={() => void persist(false)}
+              >
+                {t('wizard.saveDraft')}
+              </Button>
+              <Button
+                variant="primary"
+                loading={busy}
+                aria-disabled={blocking || guard.disabled}
+                onClick={() => {
+                  if (!blocking && guard.allowed) void persist(true);
+                }}
+              >
+                {t('wizard.validate')}
+              </Button>
+            </div>
+            {!guard.allowed && guard.reason ? (
+              <p className="m-0 text-xs" style={soft}>
+                {guard.reason}
+              </p>
+            ) : null}
           </div>
         )}
       </div>
