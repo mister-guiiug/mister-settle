@@ -12,6 +12,7 @@ import { useSpaces } from './store.ts';
 import { can, useCurrentSpace } from './useCurrentSpace.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
 import { ColorPicker } from '../../components/ColorPicker.tsx';
+import { CategoriesCard } from '../expenses/CategoriesCard.tsx';
 
 /**
  * LES RÉGLAGES D'UN ESPACE. Chaque écriture porte la version lue : un
@@ -134,6 +135,11 @@ function SpaceSettings({ space }: { space: Space }) {
           </div>
         </form>
       </Card>
+
+      <CategoriesCard
+        space={space}
+        editable={rights.admin && !space.archivedAt}
+      />
 
       <Card>
         <CardHeader

@@ -27,9 +27,9 @@
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
   "bundleBudget": {
-    "totalGzipKb": 240,
+    "totalGzipKb": 270,
     "mainChunkKb": 430,
-    "_pourquoi": "Relevé 217,6 kB gzip le 07/09/2026 après le lot 3 (domaine monétaire, ports validés par Zod, adaptateur local complet, adaptateur Supabase paresseux, écrans en chunks séparés). 240 = 217,6 × 1,10 arrondi au supérieur — la formule du cliquet du socle. Le squelette était à 192,5 pour un seul écran de notes."
+    "_pourquoi": "Relevé 243,3 kB gzip le 07/09/2026 après les lots 5 à 7 (personnes, regroupements, dépenses : liste, assistant en trois pas, détail — chacun en chunk paresseux de 2 à 4 kB ; le chunk principal reste à 79,5 kB). 270 = 243,3 × 1,10 arrondi à la dizaine supérieure — la formule du cliquet du socle. Relevé précédent : 217,6 après le lot 3."
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
