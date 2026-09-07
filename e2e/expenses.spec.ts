@@ -56,7 +56,7 @@ test.describe('@critical dépenses', () => {
     ).toBeVisible();
 
     // Le solde : Alice a payé 30 pour deux, Bob lui doit 15.
-    await page.getByRole('link', { name: 'Tableau de bord' }).click();
+    await page.getByRole('link', { name: 'Retour' }).click();
     await expect(page.getByText('Mon solde')).toBeVisible();
     await expect(page.getByText(/15,00/).first()).toBeVisible();
     await expect(page.getByText('1 dépense validée')).toBeVisible();

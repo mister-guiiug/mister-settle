@@ -10,8 +10,9 @@ import {
 import {
   Home,
   Info,
-  LayoutDashboard,
+  ArrowLeftRight,
   Receipt,
+  Scale,
   Settings,
   SlidersHorizontal,
   UserRound,
@@ -90,6 +91,16 @@ const ExpenseDetailScreen = lazy(() =>
     default: m.ExpenseDetailScreen,
   }))
 );
+const BalancesScreen = lazy(() =>
+  import('./features/balances/BalancesScreen.tsx').then(m => ({
+    default: m.BalancesScreen,
+  }))
+);
+const SettlementsScreen = lazy(() =>
+  import('./features/balances/SettlementsScreen.tsx').then(m => ({
+    default: m.SettlementsScreen,
+  }))
+);
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -139,20 +150,24 @@ function Shell() {
   const spaceNav = spaceId
     ? [
         {
-          href: `/e/${spaceId}`,
-          label: t('nav.dashboard'),
-          icon: <LayoutDashboard aria-hidden="true" />,
-          end: true,
-        },
-        {
           href: `/e/${spaceId}/depenses`,
           label: t('nav.expenses'),
           icon: <Receipt aria-hidden="true" />,
         },
         {
+          href: `/e/${spaceId}/soldes`,
+          label: t('nav.balances'),
+          icon: <Scale aria-hidden="true" />,
+        },
+        {
           href: `/e/${spaceId}/personnes`,
           label: t('nav.people'),
           icon: <Users aria-hidden="true" />,
+        },
+        {
+          href: `/e/${spaceId}/remboursements`,
+          label: t('nav.settle'),
+          icon: <ArrowLeftRight aria-hidden="true" />,
         },
         {
           href: `/e/${spaceId}/reglages`,
@@ -177,6 +192,9 @@ function Shell() {
       return t('wizard.splitTitle');
     if (matchPath('/e/:spaceId/depenses/:expenseId', pathname))
       return t('expense.title');
+    if (matchPath('/e/:spaceId/soldes', pathname)) return t('balances.title');
+    if (matchPath('/e/:spaceId/remboursements', pathname))
+      return t('settlements.title');
     if (matchPath('/e/:spaceId/personnes', pathname)) return t('people.title');
     if (matchPath('/e/:spaceId/regroupements', pathname))
       return t('groups.title');
@@ -242,6 +260,8 @@ function Shell() {
                 path="depenses/:expenseId/repartition"
                 element={<ExpenseWizardScreen mode="split" />}
               />
+              <Route path="soldes" element={<BalancesScreen />} />
+              <Route path="remboursements" element={<SettlementsScreen />} />
               <Route path="personnes" element={<ParticipantsScreen />} />
               <Route path="regroupements" element={<GroupsScreen />} />
               <Route path="reglages" element={<SpaceSettingsScreen />} />

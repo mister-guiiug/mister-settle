@@ -10,6 +10,8 @@ const KNOWN_DETAILS = [
   'duplicate-name',
   'participant-linked',
   'foreign-member',
+  'same-person',
+  'amount-not-positive',
 ] as const;
 type KnownDetail = (typeof KNOWN_DETAILS)[number];
 const isKnownDetail = (detail: string): detail is KnownDetail =>
