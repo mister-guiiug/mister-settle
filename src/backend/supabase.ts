@@ -44,6 +44,11 @@ const log = createLogger('supabase');
  * la query, que le routeur ne touche pas (squelette, ADR 0007).
  */
 export const supabase = createSupabaseClientFactory<SupabaseClient>({
+  // L'ENVIRONNEMENT SE DONNE : `import.meta.env` n'est remplacé par Vite que
+  // dans le code de l'application, pas dans le socle. Sans lui, le site
+  // publié disait « configuration manquante » avec les variables pourtant
+  // dans le bundle (relevé du 07/09/2026).
+  env: import.meta.env,
   auth: { flowType: 'pkce' },
 });
 
