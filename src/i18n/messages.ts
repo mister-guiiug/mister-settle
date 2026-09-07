@@ -69,6 +69,22 @@ const fr = {
       other: '{count} espaces',
     },
   },
+  // Les noms des icônes proposées pour un espace : ce que le lecteur
+  // d'écran annonce, l'émoji restant décoratif.
+  icons: {
+    home: 'Maison',
+    plane: 'Avion',
+    beach: 'Plage',
+    mountain: 'Montagne',
+    meal: 'Repas',
+    cart: 'Courses',
+    party: 'Fête',
+    car: 'Voiture',
+    camp: 'Camping',
+    sport: 'Sport',
+    study: 'Études',
+    gift: 'Cadeau',
+  },
   newSpace: {
     title: 'Nouvel espace',
     name: 'Nom',
@@ -78,6 +94,7 @@ const fr = {
     currency: 'Devise',
     icon: 'Icône',
     iconHint: 'Un emoji, ou rien.',
+    iconNone: 'Aucune',
     color: 'Couleur',
     meName: 'Mon nom dans cet espace',
     meNameHint: 'C’est ainsi que les autres vous verront.',
@@ -718,6 +735,22 @@ const en: typeof fr = {
       other: '{count} spaces',
     },
   },
+  // Les noms des icônes proposées pour un espace : ce que le lecteur
+  // d'écran annonce, l'émoji restant décoratif.
+  icons: {
+    home: 'House',
+    plane: 'Plane',
+    beach: 'Beach',
+    mountain: 'Mountain',
+    meal: 'Meal',
+    cart: 'Groceries',
+    party: 'Party',
+    car: 'Car',
+    camp: 'Camping',
+    sport: 'Sport',
+    study: 'Studies',
+    gift: 'Gift',
+  },
   newSpace: {
     title: 'New space',
     name: 'Name',
@@ -727,6 +760,7 @@ const en: typeof fr = {
     currency: 'Currency',
     icon: 'Icon',
     iconHint: 'An emoji, or nothing.',
+    iconNone: 'None',
     color: 'Colour',
     meName: 'My name in this space',
     meNameHint: 'This is how others will see you.',

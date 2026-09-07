@@ -12,6 +12,7 @@ import { useSpaces } from './store.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
 import { CURRENCIES, currencyLabel } from '../../domain/currencies.ts';
 import { ColorPicker } from '../../components/ColorPicker.tsx';
+import { IconPicker } from '../../components/IconPicker.tsx';
 
 /**
  * Créer un espace : un nom, une devise, et c'est tout ce qui est obligatoire.
@@ -88,12 +89,11 @@ export function NewSpaceScreen() {
             </option>
           ))}
         </SelectField>
-        <TextField
+        <IconPicker
           label={t('newSpace.icon')}
-          hint={t('newSpace.iconHint')}
           value={icon}
-          maxLength={8}
-          onChange={event => setIcon(event.target.value)}
+          color={color}
+          onChange={setIcon}
         />
         <ColorPicker
           label={t('newSpace.color')}

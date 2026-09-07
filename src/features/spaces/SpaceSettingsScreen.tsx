@@ -12,6 +12,7 @@ import { useSpaces } from './store.ts';
 import { can, useCurrentSpace } from './useCurrentSpace.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
 import { ColorPicker } from '../../components/ColorPicker.tsx';
+import { IconPicker } from '../../components/IconPicker.tsx';
 import { CategoriesCard } from '../expenses/CategoriesCard.tsx';
 
 /**
@@ -110,13 +111,12 @@ function SpaceSettings({ space }: { space: Space }) {
             disabled={!rights.admin}
             onChange={event => setDescription(event.target.value)}
           />
-          <TextField
+          <IconPicker
             label={t('newSpace.icon')}
-            hint={t('newSpace.iconHint')}
             value={icon}
-            maxLength={8}
+            color={color}
             disabled={!rights.admin}
-            onChange={event => setIcon(event.target.value)}
+            onChange={setIcon}
           />
           <ColorPicker
             label={t('newSpace.color')}

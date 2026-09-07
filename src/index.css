@@ -103,6 +103,92 @@ body {
 
 /*
  * ════════════════════════════════════════════════════════════════════════════
+ * LE BOUTON ROND DU GESTE PRINCIPAL
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ * Il flotte au centre, JUSTE AU-DESSUS DE LA BARRE BASSE : la hauteur réservée
+ * est la même expression que celle de la zone de notification quinze lignes
+ * plus haut — 4,5 rem de barre, l'espace fluide, et la zone sûre iOS. Trois
+ * copies de la même valeur seraient trois occasions de diverger ; il n'y en a
+ * que deux, et elles sont voisines.
+ *
+ * L'EMPILEMENT : la barre basse est à 20, la zone de notification à 70. Le
+ * bouton se place entre les deux — au-dessus du contenu et de la barre, sous
+ * ce qui annonce ou demande quelque chose.
+ *
+ * Le contenu de la page réserve sa place en bas (`:has`) : sans cela, le
+ * bouton couvrirait la dernière ligne d'une liste, celle qu'on vient
+ * justement d'ajouter.
+ */
+.settle-fab {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(
+    4.5rem + var(--spacing-fluid-sm, 0.75rem) +
+      max(env(safe-area-inset-bottom), 0px)
+  );
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: var(--dwc-primary);
+  color: var(--dwc-primary-contrast);
+  box-shadow:
+    0 6px 16px rgb(0 0 0 / 0.28),
+    0 2px 4px rgb(0 0 0 / 0.2);
+  text-decoration: none;
+}
+
+.settle-fab:hover {
+  filter: brightness(1.06);
+}
+
+/* L'anneau de focus suit le rond, et l'enfoncement garde le centrage. */
+.settle-fab:focus-visible {
+  outline: 2px solid var(--dwc-text);
+  outline-offset: 3px;
+}
+
+#contenu:has(.settle-fab) {
+  padding-bottom: 3.5rem;
+}
+
+/*
+ * ════════════════════════════════════════════════════════════════════════════
+ * L'ANNEAU DE FOCUS, LÀ OÙ IL DÉBORDAIT
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ * DEUX DÉFAUTS VUS LE 08/09/2026, en modifiant une personne.
+ *
+ * 1. LE CORPS DU PANNEAU ROGNAIT L'ANNEAU. `sheet-body` défile
+ *    (`overflow: auto`), et les champs y font exactement sa largeur : l'anneau
+ *    du socle, peint 3,2 px en dehors du champ (1,6 de trait, 1,6 d'écart),
+ *    tombait donc hors de la boîte de rognage — coupé à gauche et à droite.
+ *    Cinq pixels de marge intérieure lui rendent la place (l'anneau en
+ *    demande quatre) ; la marge négative de même valeur laisse les champs
+ *    exactement où ils étaient.
+ *
+ * 2. LES PASTILLES DE COULEUR ET D'ICÔNE N'EN MONTRAIENT AUCUN. Leur bouton
+ *    radio est masqué (`sr-only`) pour que la pastille le remplace à l'écran ;
+ *    le navigateur dessinait alors son anneau sur une boîte d'un pixel, au
+ *    coin de la pastille. Ici il entoure la pastille, et rien d'autre.
+ */
+[data-dwc='sheet-body'] {
+  padding-inline: 5px;
+  margin-inline: -5px;
+}
+
+.settle-puce:has(input:focus-visible) {
+  outline: 2px solid var(--dwc-text);
+  outline-offset: 2px;
+}
+
+/*
+ * ════════════════════════════════════════════════════════════════════════════
  * LE MOUVEMENT
  * ════════════════════════════════════════════════════════════════════════════
  *
@@ -201,6 +287,18 @@ body {
   }
   #contenu a:has(> [data-dwc='card']):active {
     transform: scale(0.985);
+  }
+
+  /*
+   * LE BOUTON ROND RÉPOND AUSSI — mais son `transform` porte déjà son
+   * centrage : l'enfoncement s'y ajoute au lieu de le remplacer, sans quoi le
+   * bouton sauterait d'une demi-largeur à chaque appui.
+   */
+  .settle-fab {
+    transition: transform 120ms ease-out;
+  }
+  .settle-fab:active {
+    transform: translateX(-50%) scale(0.94);
   }
 }
 

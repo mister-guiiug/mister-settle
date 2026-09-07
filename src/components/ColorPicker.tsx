@@ -20,6 +20,12 @@ interface ColorPickerProps {
  * Un groupe de boutons radio — le rôle natif, pas un `div` qui se prend pour
  * une case : le clavier et les lecteurs d'écran le connaissent déjà. La
  * première option est « aucune couleur ».
+ *
+ * LE BOUTON EST INVISIBLE, PAS LE FOCUS. Le radio natif est masqué
+ * (`sr-only`) pour que la pastille colorée le remplace à l'écran ; sans la
+ * classe `settle-puce`, le navigateur dessinait alors son anneau sur une boîte
+ * d'un pixel, au coin de la pastille — un trait perdu qui débordait au lieu
+ * d'entourer. La règle de `index.css` le porte sur la pastille elle-même.
  */
 export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
   const name = useId();
@@ -30,7 +36,7 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
         {['', ...PALETTE].map(color => (
           <label
             key={color || 'none'}
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2"
+            className="settle-puce flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2"
             style={{
               background: color || 'var(--dwc-surface-2)',
               borderColor: value === color ? 'var(--dwc-text)' : 'transparent',
