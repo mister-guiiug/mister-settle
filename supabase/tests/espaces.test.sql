@@ -165,7 +165,8 @@ select is(
   'et la personne « Bob » lui est rattachée — son historique n’a pas bougé'
 );
 select is(
-  (select uses from invitations where space_id = 'e0000000-0000-4000-8000-000000000001'),
+  (select uses from invitations where space_id = 'e0000000-0000-4000-8000-000000000001'
+    order by created_at desc limit 1),
   1,
   'l’invitation compte un usage'
 );

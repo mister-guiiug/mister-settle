@@ -114,19 +114,24 @@ language sql stable security definer set search_path = public as $$
   select space_role(p_space) is not null;
 $$;
 
+-- JAMAIS NULL. Pour un non-membre, `space_role` rend NULL, et `NULL in (…)`
+-- rend NULL : une politique le lit comme faux, mais `if not NULL` dans une
+-- fonction ne lève JAMAIS — c'est ainsi qu'un compte étranger a pu appeler
+-- `save_expense` lors de la première exécution de `espaces.test.sql`. D'où le
+-- `coalesce` : ces fonctions répondent vrai ou faux, rien d'autre.
 create or replace function can_contribute(p_space uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select space_role(p_space) in ('owner', 'admin', 'contributor');
+  select coalesce(space_role(p_space) in ('owner', 'admin', 'contributor'), false);
 $$;
 
 create or replace function is_space_admin(p_space uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select space_role(p_space) in ('owner', 'admin');
+  select coalesce(space_role(p_space) in ('owner', 'admin'), false);
 $$;
 
 create or replace function is_space_owner(p_space uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select space_role(p_space) = 'owner';
+  select coalesce(space_role(p_space) = 'owner', false);
 $$;
 
 -- Les politiques s'exécutent sous le rôle de la requête : il lui faut le
