@@ -38,14 +38,17 @@ describe('HomeScreen', () => {
     expect(
       await screen.findByText('Aucun espace pour le moment.')
     ).toBeInTheDocument();
-    // La création se fait par le bouton rond du bas — un LIEN, dont la légende
-    // porte le nom accessible. Il n'y a plus d'autre chemin, et ce test le
-    // dit : deux chemins pour un geste, c'était l'ancien écran.
-    const creer = screen.getByRole('link', { name: 'Créer un espace' });
-    expect(creer).toHaveAttribute('href', '/espaces/nouveau');
+    // DEUX OFFRES, ET C'EST VOULU SUR CET ÉTAT-LÀ : le bouton rond du bas —
+    // un LIEN, dont la légende porte le nom accessible — et le bouton de
+    // l'état vide, sous la phrase qui explique que la page n'a rien à
+    // montrer. Le test tient les deux : c'est ce qui distingue cet écran de
+    // celui qui a des espaces, où seul le rond subsiste.
     expect(
-      screen.queryByRole('button', { name: 'Créer un espace' })
-    ).toBeNull();
+      screen.getByRole('link', { name: 'Créer un espace' })
+    ).toHaveAttribute('href', '/espaces/nouveau');
+    expect(
+      screen.getByRole('button', { name: 'Créer un espace' })
+    ).toBeInTheDocument();
   });
 
   it('liste les espaces ouverts, et range les archivés à part', async () => {

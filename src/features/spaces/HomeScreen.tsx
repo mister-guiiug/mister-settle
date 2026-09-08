@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
@@ -33,6 +33,8 @@ export function HomeScreen() {
   const ready = useSpaces(state => state.ready);
   const error = useSpaces(state => state.error);
   const load = useSpaces(state => state.load);
+  const navigate = useNavigate();
+  const createSpace = () => void navigate('/espaces/nouveau');
   const needsSignIn = isRemote && authReady && !signedIn;
   const canLoad = !isRemote || (authReady && signedIn);
 
@@ -64,9 +66,10 @@ export function HomeScreen() {
   return (
     <>
       {/*
-        LA CRÉATION N'EST PLUS ICI. Elle vit en bas, au centre, sous le pouce
-        et sous sa légende (`Fab`) : un seul endroit pour un seul geste. Ce qui
-        reste en tête, c'est le compte — ce que la page dit d'elle-même.
+        LA CRÉATION N'EST PLUS EN TÊTE. Elle vit en bas, au centre, sous le
+        pouce et sous sa légende (`Fab`) — et, quand la page est vide, sous la
+        phrase qui explique pourquoi elle l'est. Ce qui reste ici, c'est le
+        compte : ce que la page dit d'elle-même.
       */}
       <p className="m-0 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
         {ready
@@ -84,10 +87,21 @@ export function HomeScreen() {
       {!ready ? (
         <SkeletonGroup label={t('spaces.loading')} lines={3} className="mt-6" />
       ) : open.length === 0 ? (
+        /*
+          L'ÉTAT VIDE GARDE SON BOUTON. Ailleurs, offrir deux fois le même
+          geste est une redondance ; ici, c'est le premier lancement — la page
+          n'a rien à montrer, et la seule chose à faire doit être sous la
+          phrase qui l'explique, pas seulement au bas de l'écran.
+        */
         <EmptyState
           title={t('spaces.empty')}
           description={t('spaces.emptyHint')}
           className="mt-8"
+          action={
+            <Button variant="primary" onClick={createSpace}>
+              {t('spaces.create')}
+            </Button>
+          }
         />
       ) : (
         <ul className="mt-4 flex list-none flex-col gap-2 p-0">
@@ -115,7 +129,7 @@ export function HomeScreen() {
 
       <AppFooter repoUrl={REPO_URL} issues className="mt-8" />
 
-      {/* Le seul chemin vers la création : le geste et son nom, au même endroit. */}
+      {/* Le geste et son nom, au même endroit, sur tous les états de la page. */}
       <Fab to="/espaces/nouveau" label={t('spaces.create')} />
     </>
   );
