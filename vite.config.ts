@@ -91,7 +91,16 @@ export default defineConfig(({ command }) => {
       //     `wide.png`), dimensions comprises. Elles décident de l'interface
       //     d'installation — une fiche au lieu d'une ligne et un bouton — et
       //     `npm run screenshots` les régénère depuis un build.
-      VitePWA(pwaBaseOptions({ id: APP_ID })),
+      VitePWA(
+        pwaBaseOptions({
+          id: APP_ID,
+          // SANS `name`, LE MANIFESTE PREND L'IDENTIFIANT : le socle retombe
+          // sur `id` (`name ?? shortName ?? id`), et l'écran d'accueil
+          // affichait « mister-settle ». Le catalogue connaît pourtant le vrai
+          // nom — c'est une amélioration à porter au socle, pas ici.
+          name: 'Mister Settle',
+        })
+      ),
 
       ...(analyze
         ? [
