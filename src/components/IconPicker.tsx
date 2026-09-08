@@ -1,13 +1,15 @@
 import { useId } from 'react';
+import { TextField } from '@mister-guiiug/dev-pwa-config/react/field';
 import { useI18n } from '../i18n/index.ts';
 
 /**
- * DOUZE ICÔNES, ET RIEN À TAPER.
+ * DOUZE ICÔNES, ET LE CHAMP LIBRE SOUS ELLES.
  *
- * Le champ était libre : il fallait connaître le raccourci de son système
- * pour poser un émoji, et une icône se choisit plus vite qu'elle ne s'écrit.
- * Douze suffisent pour ce que les gens partagent — un voyage, une colocation,
- * une table, des courses, une fête.
+ * Le champ seul demandait de connaître le raccourci de son système pour poser
+ * un émoji, et une icône se choisit plus vite qu'elle ne s'écrit : la grille
+ * couvre ce que les gens partagent — un voyage, une colocation, une table,
+ * des courses, une fête. Mais douze ne sont pas tout le monde, et le champ
+ * reste dessous : on choisit OU on écrit, la valeur est la même.
  *
  * CE QUI EST STOCKÉ NE CHANGE PAS : la base garde `icon` en texte, huit
  * signes au plus (migration 0006), et l'écran d'accueil l'affiche tel quel
@@ -106,6 +108,21 @@ export function IconPicker({
           </label>
         ))}
       </div>
+      {/*
+        LE CHAMP ET LA GRILLE ÉCRIVENT LA MÊME VALEUR : taper un émoji hors
+        liste le fait apparaître en tête de grille, sélectionné (la pastille
+        « custom » ci-dessus), et choisir une pastille remplit le champ. Rien à
+        réconcilier, aucun état en double.
+      */}
+      <TextField
+        label={t('newSpace.iconCustom')}
+        hint={t('newSpace.iconHint')}
+        value={value}
+        maxLength={8}
+        disabled={disabled}
+        className="mt-3"
+        onChange={event => onChange(event.target.value)}
+      />
     </fieldset>
   );
 }

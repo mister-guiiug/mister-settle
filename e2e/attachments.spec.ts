@@ -20,10 +20,7 @@ test.describe('@critical justificatifs', () => {
     await page.getByLabel('Mon nom dans cet espace').fill('Alice');
     await page.getByRole('button', { name: 'Créer l’espace' }).click();
     await page.getByRole('link', { name: 'Dépenses' }).click();
-    await page
-      .getByRole('button', { name: 'Nouvelle dépense' })
-      .first()
-      .click();
+    await page.getByRole('link', { name: 'Nouvelle dépense' }).click();
     await page.getByLabel('Libellé').fill('Restaurant');
     await page.getByLabel('Montant (EUR)').fill('30');
     await page.getByRole('button', { name: 'Continuer' }).click();

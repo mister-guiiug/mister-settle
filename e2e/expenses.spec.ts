@@ -27,10 +27,7 @@ test.describe('@critical dépenses', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Dépenses'
     );
-    await page
-      .getByRole('button', { name: 'Nouvelle dépense' })
-      .first()
-      .click();
+    await page.getByRole('link', { name: 'Nouvelle dépense' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Nouvelle dépense'
     );

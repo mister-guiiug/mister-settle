@@ -287,6 +287,26 @@ function Shell() {
         title={title}
         actions={
           <>
+            {/*
+              LE RETOUR À L'ACCUEIL, EN UN GESTE — ET SEULEMENT DANS UN ESPACE.
+              Là, la barre basse ne montre que les onglets de l'espace, et la
+              flèche de l'en-tête ne remonte que d'un cran (le détail vers la
+              liste, la liste vers l'espace) : revenir à « Mes espaces »
+              demandait deux ou trois retours. Ailleurs, la barre porte déjà
+              l'entrée « Espaces » — deux liens du même nom vers la même page,
+              c'est ce que le parcours e2e a refusé, à raison.
+            */}
+            {spaceId ? (
+              <Link
+                to="/"
+                aria-label={t('nav.home')}
+                title={t('nav.home')}
+                className="flex items-center no-underline"
+                style={{ color: 'var(--dwc-text)' }}
+              >
+                <Home size={20} aria-hidden="true" />
+              </Link>
+            ) : null}
             {isRemote ? (
               <Link
                 to="/hors-ligne"

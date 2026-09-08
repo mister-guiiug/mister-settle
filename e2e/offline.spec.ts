@@ -21,10 +21,7 @@ test.describe('@critical hors ligne', () => {
 
     // Une première dépense EN LIGNE : l'assistant et le détail sont chargés.
     await page.getByRole('link', { name: 'Dépenses' }).click();
-    await page
-      .getByRole('button', { name: 'Nouvelle dépense' })
-      .first()
-      .click();
+    await page.getByRole('link', { name: 'Nouvelle dépense' }).click();
     await page.getByLabel('Libellé').fill('Pain');
     await page.getByLabel('Montant (EUR)').fill('3');
     await page.getByRole('button', { name: 'Continuer' }).click();
@@ -40,10 +37,7 @@ test.describe('@critical hors ligne', () => {
 
     // Puis SANS RÉSEAU : la même chose, et rien ne casse.
     await context.setOffline(true);
-    await page
-      .getByRole('button', { name: 'Nouvelle dépense' })
-      .first()
-      .click();
+    await page.getByRole('link', { name: 'Nouvelle dépense' }).click();
     await page.getByLabel('Libellé').fill('Lait');
     await page.getByLabel('Montant (EUR)').fill('2');
     await page.getByRole('button', { name: 'Continuer' }).click();
