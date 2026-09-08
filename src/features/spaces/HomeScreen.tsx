@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
@@ -34,8 +33,6 @@ export function HomeScreen() {
   const ready = useSpaces(state => state.ready);
   const error = useSpaces(state => state.error);
   const load = useSpaces(state => state.load);
-  const navigate = useNavigate();
-  const createSpace = () => void navigate('/espaces/nouveau');
   const needsSignIn = isRemote && authReady && !signedIn;
   const canLoad = !isRemote || (authReady && signedIn);
 
@@ -66,17 +63,16 @@ export function HomeScreen() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3">
-        <p className="m-0 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
-          {ready
-            ? fmt.plural(open.length, m.spaces.count, { count: open.length })
-            : ''}
-        </p>
-        <Button variant="primary" onClick={createSpace}>
-          <Plus size={18} aria-hidden="true" />
-          {t('spaces.create')}
-        </Button>
-      </div>
+      {/*
+        LA CRÉATION N'EST PLUS ICI. Elle vit en bas, au centre, sous le pouce
+        et sous sa légende (`Fab`) : un seul endroit pour un seul geste. Ce qui
+        reste en tête, c'est le compte — ce que la page dit d'elle-même.
+      */}
+      <p className="m-0 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
+        {ready
+          ? fmt.plural(open.length, m.spaces.count, { count: open.length })
+          : ''}
+      </p>
 
       {error ? (
         <ErrorBanner
@@ -92,11 +88,6 @@ export function HomeScreen() {
           title={t('spaces.empty')}
           description={t('spaces.emptyHint')}
           className="mt-8"
-          action={
-            <Button variant="primary" onClick={createSpace}>
-              {t('spaces.create')}
-            </Button>
-          }
         />
       ) : (
         <ul className="mt-4 flex list-none flex-col gap-2 p-0">
@@ -124,10 +115,7 @@ export function HomeScreen() {
 
       <AppFooter repoUrl={REPO_URL} issues className="mt-8" />
 
-      {/*
-        Le geste principal de cet écran, sous le pouce. Le bouton d'en-tête
-        reste : il porte le mot « Créer un espace », celui-ci porte le geste.
-      */}
+      {/* Le seul chemin vers la création : le geste et son nom, au même endroit. */}
       <Fab to="/espaces/nouveau" label={t('spaces.create')} />
     </>
   );
