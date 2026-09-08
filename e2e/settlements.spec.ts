@@ -20,10 +20,7 @@ test.describe('@critical soldes et remboursements', () => {
     await expect(page.getByText('2 personnes')).toBeVisible();
 
     await page.getByRole('link', { name: 'Dépenses' }).click();
-    await page
-      .getByRole('button', { name: 'Nouvelle dépense' })
-      .first()
-      .click();
+    await page.getByRole('link', { name: 'Nouvelle dépense' }).click();
     await page.getByLabel('Libellé').fill('Restaurant');
     await page.getByLabel('Montant (EUR)').fill('30');
     await page.getByRole('button', { name: 'Continuer' }).click();

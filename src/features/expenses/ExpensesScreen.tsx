@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
@@ -117,22 +116,17 @@ export function ExpensesScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="m-0 text-sm" style={soft}>
-          {ready
-            ? fmt.plural(live.length, m.expenses.count, { count: live.length })
-            : ''}
-        </p>
-        {editable ? (
-          <Button
-            variant="primary"
-            onClick={() => void navigate(`/e/${space.id}/depenses/nouvelle`)}
-          >
-            <Plus size={18} aria-hidden="true" />
-            {t('expenses.add')}
-          </Button>
-        ) : null}
-      </div>
+      {/*
+        L'AJOUT N'EST PLUS EN TÊTE. Le bouton rond du bas le porte sur cet
+        écran (`SpaceShell`), et l'état vide le redit sous la phrase qui
+        explique qu'il n'y a rien : trois offres pour un geste, c'était deux
+        de trop. Ce qui reste ici, c'est le compte.
+      */}
+      <p className="m-0 text-sm" style={soft}>
+        {ready
+          ? fmt.plural(live.length, m.expenses.count, { count: live.length })
+          : ''}
+      </p>
 
       {!rights.contribute ? (
         <p className="m-0 text-xs" style={soft}>
