@@ -123,38 +123,102 @@ body {
 .settle-fab {
   position: fixed;
   left: 50%;
-  transform: translateX(-50%);
+  /*
+   * LE CENTRAGE PASSE PAR `translate`, PAS PAR `transform`, et c'est ce qui
+   * rend le reste possible : la propriété individuelle laisse `transform`
+   * libre pour l'appui. Sans elle, chaque état devrait recopier le
+   * `translateX(-50%)` — et celui qui l'oublierait ferait sauter le bouton
+   * d'une demi-largeur.
+   */
+  translate: -50% 0;
   bottom: calc(
     4.5rem + var(--spacing-fluid-sm, 0.75rem) +
       max(env(safe-area-inset-bottom), 0px)
   );
   z-index: 30;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+/*
+ * LE DISQUE. Un aplat ferait une pastille ; ce qu'on veut, c'est un objet
+ * posé sur la page. Trois couches, chacune pour une raison :
+ *
+ *   - un dégradé RADIAL décentré vers le haut à gauche, comme une lumière qui
+ *     vient d'où viennent les fenêtres ;
+ *   - un liseré clair et un reflet intérieur d'un pixel, qui donnent l'arête
+ *     du bord — sans eux le disque reste plat, quel que soit le dégradé ;
+ *   - deux ombres portées : une longue TEINTÉE de la couleur de marque (un
+ *     halo, pas une tache grise) et une courte, neutre, qui pose l'objet.
+ *
+ * `color-mix` évite de figer six teintes de plus : elles se déduisent de
+ * `--dwc-primary`, et suivent donc le thème clair comme le sombre.
+ */
+.settle-fab-disque {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3.75rem;
+  height: 3.75rem;
   border-radius: 9999px;
-  background: var(--dwc-primary);
   color: var(--dwc-primary-contrast);
+  background:
+    radial-gradient(
+      118% 118% at 32% 18%,
+      color-mix(in srgb, var(--dwc-primary) 78%, #ffffff) 0%,
+      var(--dwc-primary) 52%,
+      color-mix(in srgb, var(--dwc-primary) 84%, #000000) 100%
+    ),
+    var(--dwc-primary);
+  border: 1px solid color-mix(in srgb, var(--dwc-primary) 55%, #ffffff);
   box-shadow:
-    0 6px 16px rgb(0 0 0 / 0.28),
-    0 2px 4px rgb(0 0 0 / 0.2);
-  text-decoration: none;
+    0 12px 26px -8px color-mix(in srgb, var(--dwc-primary) 62%, transparent),
+    0 3px 8px rgb(0 0 0 / 0.24),
+    inset 0 1px 0 rgb(255 255 255 / 0.38),
+    inset 0 -2px 6px rgb(0 0 0 / 0.12);
 }
 
-.settle-fab:hover {
-  filter: brightness(1.06);
+/*
+ * LA LÉGENDE flotte au-dessus du contenu de la page : elle porte donc son
+ * propre fond, dépoli, sinon elle se lirait sur une ligne de liste. Elle donne
+ * aussi son nom accessible au lien — d'où le contraste plein, pas atténué.
+ */
+.settle-fab-legende {
+  padding: 0.1rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--dwc-text);
+  background: color-mix(in srgb, var(--dwc-bg) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dwc-border) 70%, transparent);
+  backdrop-filter: blur(8px);
 }
 
-/* L'anneau de focus suit le rond, et l'enfoncement garde le centrage. */
+.settle-fab:hover .settle-fab-disque {
+  box-shadow:
+    0 16px 30px -8px color-mix(in srgb, var(--dwc-primary) 72%, transparent),
+    0 4px 10px rgb(0 0 0 / 0.26),
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    inset 0 -2px 6px rgb(0 0 0 / 0.12);
+}
+
+/* L'anneau de focus suit le disque, pas la boîte du lien. */
 .settle-fab:focus-visible {
+  outline: none;
+}
+.settle-fab:focus-visible .settle-fab-disque {
   outline: 2px solid var(--dwc-text);
   outline-offset: 3px;
 }
 
 #contenu:has(.settle-fab) {
-  padding-bottom: 3.5rem;
+  padding-bottom: 5.5rem;
 }
 
 /*
@@ -290,15 +354,20 @@ body {
   }
 
   /*
-   * LE BOUTON ROND RÉPOND AUSSI — mais son `transform` porte déjà son
-   * centrage : l'enfoncement s'y ajoute au lieu de le remplacer, sans quoi le
-   * bouton sauterait d'une demi-largeur à chaque appui.
+   * LE BOUTON ROND RÉPOND AUSSI. Le centrage vivant dans `translate`, l'appui
+   * n'a qu'à écrire son échelle — et le disque seul bouge, pas la légende :
+   * un mot qui rétrécit se lit comme un tremblement.
    */
-  .settle-fab {
-    transition: transform 120ms ease-out;
+  .settle-fab-disque {
+    transition:
+      transform 120ms ease-out,
+      box-shadow 160ms ease-out;
   }
-  .settle-fab:active {
-    transform: translateX(-50%) scale(0.94);
+  .settle-fab:hover .settle-fab-disque {
+    transform: translateY(-2px);
+  }
+  .settle-fab:active .settle-fab-disque {
+    transform: scale(0.94);
   }
 }
 

@@ -21,7 +21,9 @@ test.describe('@critical le cadre', () => {
     page,
   }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'Créer un espace' }).first().click();
+    // La création se fait par le bouton rond du bas, qui est un LIEN et porte
+    // sa légende pour nom accessible — il n'y a plus d'autre chemin.
+    await page.getByRole('link', { name: 'Créer un espace' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Nouvel espace'
     );
