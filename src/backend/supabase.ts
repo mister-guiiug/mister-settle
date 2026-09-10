@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createSupabaseClientFactory } from '@mister-guiiug/dev-pwa-config/supabase-client';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { createUuid } from '@mister-guiiug/dev-pwa-config/id';
+import { identifiantDeSession } from './sessionUserId.ts';
 import {
   fromDecimalString,
   minorUnitOf,
@@ -397,10 +398,21 @@ export function createSupabaseBackend(): Backend {
     );
   };
 
+  /**
+   * L'identifiant de l'utilisateur courant.
+   *
+   * Il passait par `db.auth.getSession()`, qui n'est PAS une lecture : jeton
+   * périmé, cet appel part le renouveler contre le réseau et met une
+   * demi-minute à renoncer. `identifiantDeSession` interroge toujours le
+   * serveur quand il y a du réseau — mais lit le stockage quand il n'y en a
+   * pas, et borne l'attente quand le réseau ment.
+   */
   const me = async (): Promise<string> => {
-    const db = await client();
-    const { data } = await db.auth.getSession();
-    const id = data.session?.user.id;
+    const id = await identifiantDeSession(async () => {
+      const db = await client();
+      const { data } = await db.auth.getSession();
+      return data.session?.user.id;
+    });
     if (!id) throw new BackendError('forbidden', 'session requise');
     return id;
   };
