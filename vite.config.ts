@@ -60,7 +60,7 @@ export default defineConfig(({ command }) => {
 
       pwaSeoPlugin({
         basePath,
-        logoPath: '/icon-512.png',
+        logoPath: '/icons/icon-512.png',
         themeColor: { light: '#f7f8fa', dark: '#0f1115' },
       }),
 
