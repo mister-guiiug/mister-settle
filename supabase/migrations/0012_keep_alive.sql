@@ -1,5 +1,7 @@
 -- Table « keep_alive » pour l'anti-pause Supabase Free.
--- À appliquer une fois PAR PROJET (SQL editor du dashboard, ou migration).
+-- Migration : appliquée par le workflow « Supabase migrations ». Ce fichier
+-- a d'abord vécu en supabase/keep-alive.sql, hors du dossier migrations, donc
+-- personne ne l'appliquait jamais et le ping répondait 404.
 -- Le workflow réutilisable pwa-supabase-keepalive.yml fait un SELECT anon
 -- dessus tous les ~3 jours → vraie requête DB → reset du compteur d'inactivité.
 -- Aucune donnée sensible ; l'anon key est protégée par cette policy en lecture.
