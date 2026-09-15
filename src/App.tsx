@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { AppHeader } from '@mister-guiiug/dev-pwa-config/react/app-header';
 import { PageContainer } from '@mister-guiiug/dev-pwa-config/react/page-container';
+import { ConsentBanner } from '@mister-guiiug/dev-pwa-config/react/consent-banner';
+import { usePageViews } from '@mister-guiiug/dev-pwa-config/react/use-page-views';
 import { BottomNav } from '@mister-guiiug/dev-pwa-config/react/bottom-nav';
 import { ThemeToggle } from '@mister-guiiug/dev-pwa-config/react/theme-toggle';
 import { ObservabilityBoundary } from '@mister-guiiug/dev-pwa-config/react/error-boundary';
@@ -147,6 +149,10 @@ const StatsScreen = lazy(() =>
 function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+  // Une vue de page par navigation. GA4 n'en envoie qu'une par chargement de
+  // document, et `initAnalytics` pose `send_page_view: false` pour que la
+  // première passe par ici comme les autres. Rien sans consentement.
+  usePageViews(pathname);
   // Le réseau vu par le navigateur alimente l'état de synchronisation : la
   // cache de lecture et la file s'y réfèrent hors de tout rendu (ADR 0015).
   const online = useOnline();
@@ -383,6 +389,11 @@ function Shell() {
             <Route path="*" element={<HomeScreen />} />
           </Routes>
         </Suspense>
+        {/* Une `region`, pas une boîte modale : elle ne recouvre rien et ne
+            piège pas le focus. Ne rend RIEN sans `VITE_GA_MEASUREMENT_ID`. */}
+        <ConsentBanner
+          gaMeasurementId={import.meta.env.VITE_GA_MEASUREMENT_ID}
+        />
       </PageContainer>
 
       <BottomNav
