@@ -35,6 +35,11 @@ installErrorReporter();
 void initSentry({
   dsn: env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
+  // `loader` REND L'IMPORT ANALYSABLE PAR VITE, ce qui permet au
+  // `manualChunks` de le ranger dans son propre morceau — et à `globIgnores`
+  // de le sortir du précache. Rien ne part tant qu'aucun DSN n'est posé :
+  // `initSentry` rend `null` AVANT l'import.
+  loader: () => import('@sentry/react'),
 });
 
 const container = document.getElementById('app');
