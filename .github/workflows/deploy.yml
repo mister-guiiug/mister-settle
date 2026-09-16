@@ -26,10 +26,16 @@ jobs:
     uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v4
     with:
       use-base-path: true
+      #
+      # Le DSN Sentry n'est PAS un secret : il part dans le bundle comme toute
+      # `VITE_*`. Absent, `initSentry` rend `null` avant d'importer.
+      #
+      # CE COMMENTAIRE EST ICI, PAS DANS LE BLOC : `build-env: |` est un bloc
+      # littéral, où « # » n'introduit rien — la ligne est du texte, passée
+      # telle quelle au script, qui la refuse (« attendu KEY=VALUE ») et fait
+      # échouer le déploiement. Cassé de 17:16 à 19:45 le 16/09/2026.
       build-env: |
         VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}
         VITE_GA_MEASUREMENT_ID=${{ vars.VITE_GA_MEASUREMENT_ID }}
-        # Le DSN Sentry n'est PAS un secret : il part dans le bundle comme
-        # toute `VITE_*`. Absent, `initSentry` rend `null` avant d'importer.
         VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
