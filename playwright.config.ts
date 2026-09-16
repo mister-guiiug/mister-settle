@@ -18,7 +18,7 @@ const base = definePwaPlaywrightConfig({
   preview: true,
   port: 4173,
   command:
-    'cross-env VITE_BASE_PATH=/ vite build && cross-env VITE_BASE_PATH=/ vite preview --port 4173 --strictPort',
+    'cross-env VITE_GA_MEASUREMENT_ID=G-E2E0000000 VITE_BASE_PATH=/ vite build && cross-env VITE_BASE_PATH=/ vite preview --port 4173 --strictPort',
 });
 
 /**
@@ -37,6 +37,10 @@ const base = definePwaPlaywrightConfig({
  * le `baseURL` qu'elle vient de calculer — `page.goto('/')` sort alors en
  * « Cannot navigate to invalid URL ».
  */
+// Identifiant de mesure FACTICE pour le serveur e2e : sans lui,
+// `ConsentBanner` ne rend rien et la garde de `entree.spec.ts` n’a rien à
+// vérifier. Le trafic vers Google est intercepté par la garde elle-même —
+// rien ne sort, aucune propriété réelle n’est touchée.
 export default defineConfig({
   ...base,
   use: { ...(base.use as Record<string, unknown>), locale: 'fr-FR' },
