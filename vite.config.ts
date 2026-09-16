@@ -49,7 +49,36 @@ export default defineConfig(({ command }) => {
     // `strictPort` : un port pris fait échouer le démarrage, au lieu de glisser
     // en silence vers un autre que `.claude/launch.json` ne connaît pas.
     server: { port: devPortOf(APP_ID, 5209), strictPort: true },
-    build: { sourcemap: true },
+    build: {
+      sourcemap: true,
+      /*
+       * NOMMER N'EST PAS PRÉCHARGER, et il faut les deux options pour les
+       * séparer.
+       *
+       * `manualChunks` donne au morceau Sentry un NOM stable — sans règle,
+       * Rollup le nomme d'après le module (`esm-*`), instable d'une version à
+       * l'autre et partagé avec d'autres paquets : le `globIgnores` du service
+       * worker n'aurait pas de cible fiable.
+       *
+       * Mais nommer un morceau le fait entrer dans la liste de `modulepreload`
+       * de l'entrée — mesuré le 16/09/2026 sur miss-ticket-pwa, 435,4 kB
+       * préchargés au lieu de 280,1, l'`import()` paresseux défait par le fait
+       * même de nommer. `resolveDependencies` l'en retire.
+       */
+      modulePreload: {
+        resolveDependencies: (_fichier: string, deps: string[]) =>
+          deps.filter(d => !/sentry-/.test(d)),
+      },
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            return id.replace(/\\/g, '/').includes('/@sentry/')
+              ? 'sentry'
+              : undefined;
+          },
+        },
+      },
+    },
     plugins: [
       react(),
       tailwindcss(),
@@ -96,16 +125,27 @@ export default defineConfig(({ command }) => {
       //     `wide.png`), dimensions comprises. Elles décident de l'interface
       //     d'installation — une fiche au lieu d'une ligne et un bouton — et
       //     `npm run screenshots` les régénère depuis un build.
-      VitePWA(
-        pwaBaseOptions({
+      VitePWA({
+        ...pwaBaseOptions({
           id: APP_ID,
           // SANS `name`, LE MANIFESTE PREND L'IDENTIFIANT : le socle retombe
           // sur `id` (`name ?? shortName ?? id`), et l'écran d'accueil
           // affichait « mister-settle ». Le catalogue connaît pourtant le vrai
           // nom — c'est une amélioration à porter au socle, pas ici.
           name: 'Mister Settle',
-        })
-      ),
+        }),
+        /*
+         * LE MORCEAU SENTRY HORS DU PRÉCACHE, sans quoi tout le découpage
+         * ci-dessus ne servirait à rien : Workbox ramasse TOUT le JS émis,
+         * `import()` ou pas. Mesuré le 16/09/2026 sur la production de deux
+         * apps du parc, 345 et 463 KiB de SDK téléchargés par chaque visiteur,
+         * sans qu'aucun DSN soit posé.
+         *
+         * `pwaBaseOptions` ne touche pas à `workbox` : ce bloc ne remplace donc
+         * rien, il ajoute la seule clé qui manquait.
+         */
+        workbox: { globIgnores: ['**/sentry-*.js'] },
+      }),
 
       ...(analyze
         ? [
