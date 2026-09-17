@@ -676,7 +676,6 @@ const fr = {
   about: {
     title: 'À propos',
     what: 'Mister Settle répartit les dépenses d’un groupe — voyage, colocation, famille — et calcule qui doit quoi à qui. Les remboursements se font en dehors de l’application : elle ne manipule jamais d’argent.',
-    version: 'Version',
   },
 };
 
@@ -1340,7 +1339,6 @@ const en: typeof fr = {
   about: {
     title: 'About',
     what: 'Mister Settle splits a group’s expenses — a trip, a flat share, a family — and works out who owes what to whom. Repayments happen outside the app: it never handles money.',
-    version: 'Version',
   },
 };
 
