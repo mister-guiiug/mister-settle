@@ -1,5 +1,4 @@
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
-import { AppVersion } from '@mister-guiiug/dev-pwa-config/react/app-version';
 import { FamilyApps } from '@mister-guiiug/dev-pwa-config/react/family-apps';
 import { PwaInstallPrompt } from '@mister-guiiug/dev-pwa-config/react/pwa-install-prompt';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
@@ -7,10 +6,10 @@ import { useI18n } from '../../i18n/index.ts';
 import { APP_ID, REPO_URL } from '../../app/links.ts';
 
 /**
- * L'écran « à propos » : version, les autres apps de la famille, et le pied de
- * page — code source, soutien, signalement.
+ * L'écran « à propos » : les autres apps de la famille et le pied de page —
+ * code source, soutien, signalement.
  *
- * `FamilyApps` et `AppVersion` sont donnés par le socle. Le lien du dépôt vient
+ * `FamilyApps` est donné par le socle. Le lien du dépôt vient
  * de `repoUrl(APP_ID)` et le lien de soutien du catalogue : neuf apps sur neuf
  * avaient recopié ces deux URL dans un `links.ts` local, et aucune ne les
  * migrait toute seule.
@@ -44,12 +43,11 @@ export function AboutScreen() {
         <p className="m-0">{t('about.what')}</p>
       </Card>
 
-      <Card>
-        <CardHeader title={t('about.version')} />
-        {/* `details` montre la date de build et le commit : de quoi savoir ce
-            qui tourne réellement quand quelqu'un décrit une anomalie. */}
-        <AppVersion details updates repoUrl={REPO_URL} />
-      </Card>
+      {/* PLUS DE CARTE « VERSION ». Le numéro portait un lien vers
+          `…/releases/tag/vX.Y.Z` et aucune app du parc ne crée de tag git : le
+          lien répondait 404. Ce qu'il fallait vraiment savoir quand quelqu'un
+          décrit une anomalie — version et commit — part toujours prérempli
+          dans le rapport de bug ouvert par `AppFooter issues`. */}
 
       <FamilyApps
         currentAppId={APP_ID}
