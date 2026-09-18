@@ -17,4 +17,4 @@ permissions:
 
 jobs:
   lighthouse:
-    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-lighthouse.yml@v4
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-lighthouse.yml@v6
