@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   ci:
-    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-ci.yml@v4
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-ci.yml@v6
     with:
       # Les e2e du squelette tournent en CI : c'est lui qui doit prouver que la
       # suite marche, avant qu'une app ne la copie.

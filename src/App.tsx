@@ -149,9 +149,10 @@ const StatsScreen = lazy(() =>
 function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
-  // Une vue de page par navigation. GA4 n'en envoie qu'une par chargement de
-  // document, et `initAnalytics` pose `send_page_view: false` pour que la
-  // première passe par ici comme les autres. Rien sans consentement.
+  // Une vue de page par navigation — ni zéro, ni deux. `initAnalytics` pose
+  // `capture_pageview: false` pour que toutes passent par ici, la première
+  // comprise : laissé à lui-même, PostHog compterait chaque navigation deux
+  // fois. Rien sans consentement.
   usePageViews(pathname);
   // Le réseau vu par le navigateur alimente l'état de synchronisation : la
   // cache de lecture et la file s'y réfèrent hors de tout rendu (ADR 0015).
@@ -390,9 +391,10 @@ function Shell() {
           </Routes>
         </Suspense>
         {/* Une `region`, pas une boîte modale : elle ne recouvre rien et ne
-            piège pas le focus. Ne rend RIEN sans `VITE_GA_MEASUREMENT_ID`. */}
+            piège pas le focus. Ne rend RIEN sans `VITE_POSTHOG_KEY`. */}
         <ConsentBanner
-          gaMeasurementId={import.meta.env.VITE_GA_MEASUREMENT_ID}
+          posthogKey={import.meta.env.VITE_POSTHOG_KEY}
+          loader={() => import('posthog-js/dist/module.slim.js')}
         />
       </PageContainer>
 

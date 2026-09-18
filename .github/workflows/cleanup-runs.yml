@@ -14,6 +14,6 @@ permissions:
 
 jobs:
   cleanup:
-    uses: mister-guiiug/dev-pwa-config/.github/workflows/cleanup-runs.yml@v4
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/cleanup-runs.yml@v6
     with:
       keep: ${{ inputs.keep }}

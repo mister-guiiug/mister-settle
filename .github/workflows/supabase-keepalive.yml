@@ -33,7 +33,7 @@ jobs:
     # trois jours. Un rouge périodique qu'on apprend à ignorer est pire que
     # pas de surveillance du tout.
     if: vars.VITE_SUPABASE_URL != ''
-    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-keepalive.yml@v4
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-keepalive.yml@v6
     secrets:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
