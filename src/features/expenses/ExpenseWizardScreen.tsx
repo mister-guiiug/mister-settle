@@ -6,6 +6,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { createUuid } from '@mister-guiiug/dev-pwa-config/id';
+import { GESTES, trackEvent } from '@mister-guiiug/dev-pwa-config/analytics';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
@@ -278,6 +279,24 @@ function Wizard({
       setBusy(false);
       return;
     }
+    /*
+     * LA DÉPENSE, UNE FOIS QU'ELLE EST RÉELLEMENT ENREGISTRÉE.
+     *
+     * APRÈS le garde d'échec ci-dessus, et c'est le point : quand le réseau
+     * tombe, `save` rend `null` et la création part dans la file de synchro.
+     * Compter avant, ou sur le clic, mélangerait les dépenses enregistrées et
+     * celles qui attendent — et gonflerait le chiffre d'autant.
+     *
+     * `modifiee` distingue la création de la correction : ce sont deux usages
+     * différents de l'app, et leur proportion dit si la saisie est fiable du
+     * premier coup.
+     *
+     * NI LE MONTANT, NI LE LIBELLÉ, NI QUI A PAYÉ. Ce sont des dépenses entre
+     * proches : le montant est une donnée financière, le libellé du texte
+     * saisi, et les participants sont des personnes. Savoir COMBIEN de
+     * dépenses sont saisies suffit à savoir si l'app sert.
+     */
+    trackEvent(GESTES.CREATION, { objet: 'depense', modifiee: !isNew });
     if (isNew) clearDraft(space.id);
     if (thenValidate) {
       const validated = await validate(result.id, result.version);
