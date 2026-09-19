@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "node": ">=22.23.2"
+    "node": ">=24.21.0"
   },
   "description": "Partage de dépenses entre proches : qui a payé, qui doit combien, remboursements suggérés — sans aucun paiement dans l’application.",
   "scripts": {
