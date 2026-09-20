@@ -45,6 +45,7 @@ import { AppUpdates } from '@mister-guiiug/dev-pwa-config/react/app-updates';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { SyncStatusBadge } from '@mister-guiiug/dev-pwa-config/react/sync-status-badge';
 import { useOnline } from '@mister-guiiug/dev-pwa-config/react/use-online';
+import { useIdlePrefetch } from '@mister-guiiug/dev-pwa-config/react/use-prefetch';
 import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
 import { isRemote } from './backend/index.ts';
@@ -58,8 +59,8 @@ import { useSpaces } from './features/spaces/store.ts';
 // qu'on ne voit pas au premier rendu n'a pas à être téléchargé au premier
 // rendu.
 // CHAQUE IMPORT D'UN ÉCRAN DU MENU EST NOMMÉ, parce qu'il sert DEUX FOIS : à
-// `lazy` ci-dessous, et au préchargement à l'inactivité de
-// `usePrechargeLesEcransDuMenu`. Deux `import()` du même spécificateur ne
+// `lazy` ci-dessous, et aux chargeurs composés `chargeLesEcrans…`, que le
+// socle lance à l'inactivité. Deux `import()` du même spécificateur ne
 // téléchargent qu'une fois — le registre de modules dédoublonne — mais encore
 // faut-il que ce soit LITTÉRALEMENT le même spécificateur, sinon le bundler
 // émet deux morceaux et le préchargement ne sert plus à rien.
@@ -94,6 +95,18 @@ const CHARGEURS_DANS_UN_ESPACE = [
   chargeStats,
   chargeSpaceSettings,
 ];
+
+/**
+ * UN CHARGEUR PAR BARRE POUR LE SOCLE, ET DES CONSTANTES DE MODULE :
+ * `prefetch()` ne lance un chargeur qu'une fois et le reconnaît à son IDENTITÉ
+ * de fonction — une fonction recréée à chaque montage serait un chargeur neuf à
+ * chaque fois. `allSettled` : un morceau qui manque n'empêche pas les autres
+ * d'arriver.
+ */
+const chargeLesEcransHorsEspace = () =>
+  Promise.allSettled(CHARGEURS_HORS_ESPACE.map(charge => charge()));
+const chargeLesEcransDansUnEspace = () =>
+  Promise.allSettled(CHARGEURS_DANS_UN_ESPACE.map(charge => charge()));
 
 const NewSpaceScreen = lazy(() =>
   import('./features/spaces/NewSpaceScreen.tsx').then(m => ({
@@ -165,60 +178,6 @@ const OfflineScreen = lazy(() =>
 const StatsScreen = lazy(() =>
   chargeStats().then(m => ({ default: m.StatsScreen }))
 );
-
-/** `navigator.connection` n'est pas dans les types du DOM : il reste un brouillon. */
-type NavigateurEconome = Navigator & { connection?: { saveData?: boolean } };
-
-/**
- * PRÉCHARGE LES ÉCRANS DE LA BARRE DÈS QUE LE FIL PRINCIPAL SOUFFLE.
- *
- * LE DÉFAUT QUE CECI CORRIGE. Sans préchargement, le morceau d'un écran n'est
- * demandé qu'AU CLIC. Mesuré à froid le 20/09/2026 sur https://mister-guiiug.github.io/mister-settle/,
- * première visite, service worker pas encore installé : le clic sur « Réglages »
- * demande `SettingsScreen`, 1 644 octets — et coûte pourtant 133 ms, parce que
- * ce n'est pas du poids mais un aller-retour réseau complet, payé au pire
- * moment. Pendant ces 133 ms l'URL disait déjà `/reglages` et l'écran affichait
- * encore « Mes espaces », sans rien pour le dire (voir le `<Suspense>`
- * ci-dessous).
- *
- * N'entre PAS dans `bundleBudget.preloadGzipKb` : ce budget ne compte que ce
- * qui est `modulepreload` dans le document, et un `import()` tardif n'y entre
- * pas.
- */
-function usePrechargeLesEcransDuMenu(dansUnEspace: boolean) {
-  useEffect(() => {
-    // `saveData` : le visiteur a demandé qu'on épargne son forfait. On ne
-    // télécharge alors que ce qu'il demande vraiment — et c'est précisément
-    // pour ce cas-là que la barre, elle, sait désormais dire qu'elle charge.
-    if ((navigator as NavigateurEconome).connection?.saveData) return;
-
-    let annule = false;
-    const chargeurs = dansUnEspace
-      ? CHARGEURS_DANS_UN_ESPACE
-      : CHARGEURS_HORS_ESPACE;
-    const precharge = () => {
-      if (annule) return;
-      // Un échec ici est sans conséquence : au clic, `lazy` redemandera le
-      // morceau et c'est LUI qui portera l'erreur, dans son propre `Suspense`.
-      for (const charge of chargeurs) void charge().catch(() => {});
-    };
-
-    // `requestIdleCallback` manque encore à Safari avant la 17 ; le repli
-    // minuté vaut mieux que rien.
-    if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(precharge, { timeout: 3000 });
-      return () => {
-        annule = true;
-        window.cancelIdleCallback?.(id);
-      };
-    }
-    const id = window.setTimeout(precharge, 1200);
-    return () => {
-      annule = true;
-      window.clearTimeout(id);
-    };
-  }, [dansUnEspace]);
-}
 
 /**
  * Le geste de navigation de la barre, porté jusqu'au `linkComponent` du socle.
@@ -292,7 +251,19 @@ export function Shell() {
   const inSpace = matchPath({ path: '/e/:spaceId', end: false }, pathname);
   const spaceId = inSpace?.params.spaceId;
   const space = useSpaces(state => state.spaces.find(s => s.id === spaceId));
-  usePrechargeLesEcransDuMenu(Boolean(spaceId));
+  // PRÉCHARGE LES ÉCRANS DE LA BARRE DÈS QUE LE FIL PRINCIPAL SOUFFLE — et
+  // seulement ceux SOUS LE POUCE : `enabled` bascule d'une barre à l'autre
+  // avec la route. Sans ça, le morceau d'un écran n'est demandé qu'AU CLIC :
+  // mesuré à froid le 20/09/2026 sur le site publié, « Réglages » coûtait
+  // 133 ms pour 1 644 octets — pas du poids, un aller-retour réseau payé au
+  // pire moment. Le socle décide du reste : une seule fois par chargeur,
+  // rejets avalés, rien sous `saveData` ni en 2g, un délai en repli là où
+  // `requestIdleCallback` manque (Safari avant la 17). N'entre PAS dans
+  // `bundleBudget.preloadGzipKb`, qui ne compte que ce qui est `modulepreload`
+  // dans le document.
+  const dansUnEspace = Boolean(spaceId);
+  useIdlePrefetch(chargeLesEcransHorsEspace, { enabled: !dansUnEspace });
+  useIdlePrefetch(chargeLesEcransDansUnEspace, { enabled: dansUnEspace });
 
   const navigate = useNavigate();
   const [enCours, demarreLaTransition] = useTransition();
