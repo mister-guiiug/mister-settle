@@ -1,4 +1,15 @@
-import { Suspense, lazy, useEffect } from 'react';
+import {
+  Suspense,
+  createContext,
+  lazy,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useTransition,
+  type ComponentProps,
+  type MouseEvent,
+} from 'react';
 import {
   BrowserRouter,
   Link,
@@ -6,10 +17,12 @@ import {
   Routes,
   matchPath,
   useLocation,
+  useNavigate,
 } from 'react-router-dom';
 import {
   Home,
   Info,
+  LoaderCircle,
   Activity,
   ArrowLeftRight,
   BarChart3,
@@ -44,6 +57,44 @@ import { useSpaces } from './features/spaces/store.ts';
 // chunk principal, et chaque écran qui s'y ajouterait le ferait déborder. Ce
 // qu'on ne voit pas au premier rendu n'a pas à être téléchargé au premier
 // rendu.
+// CHAQUE IMPORT D'UN ÉCRAN DU MENU EST NOMMÉ, parce qu'il sert DEUX FOIS : à
+// `lazy` ci-dessous, et au préchargement à l'inactivité de
+// `usePrechargeLesEcransDuMenu`. Deux `import()` du même spécificateur ne
+// téléchargent qu'une fois — le registre de modules dédoublonne — mais encore
+// faut-il que ce soit LITTÉRALEMENT le même spécificateur, sinon le bundler
+// émet deux morceaux et le préchargement ne sert plus à rien.
+const chargeSpaceSettings = () =>
+  import('./features/spaces/SpaceSettingsScreen.tsx');
+const chargeSettings = () => import('./features/settings/SettingsScreen.tsx');
+const chargeAbout = () => import('./features/about/AboutScreen.tsx');
+const chargeAccount = () => import('./features/account/AccountScreen.tsx');
+const chargeParticipants = () =>
+  import('./features/people/ParticipantsScreen.tsx');
+const chargeExpenses = () => import('./features/expenses/ExpensesScreen.tsx');
+const chargeBalances = () => import('./features/balances/BalancesScreen.tsx');
+const chargeSettlements = () =>
+  import('./features/balances/SettlementsScreen.tsx');
+const chargeActivity = () => import('./features/activity/ActivityScreen.tsx');
+const chargeStats = () => import('./features/stats/StatsScreen.tsx');
+
+/**
+ * LA BARRE BASSE CHANGE DE CONTENU, LE PRÉCHARGEMENT AUSSI. Hors d'un espace
+ * elle porte quatre entrées (l'accueil est déjà dans le bundle d'entrée) ;
+ * dedans, sept. On ne tire que celles qui sont SOUS LE POUCE à cet instant :
+ * précharger les sept écrans d'espace depuis « Mes espaces » ferait payer à
+ * tout le monde ce que personne n'a encore demandé.
+ */
+const CHARGEURS_HORS_ESPACE = [chargeSettings, chargeAccount, chargeAbout];
+const CHARGEURS_DANS_UN_ESPACE = [
+  chargeExpenses,
+  chargeBalances,
+  chargeParticipants,
+  chargeSettlements,
+  chargeActivity,
+  chargeStats,
+  chargeSpaceSettings,
+];
+
 const NewSpaceScreen = lazy(() =>
   import('./features/spaces/NewSpaceScreen.tsx').then(m => ({
     default: m.NewSpaceScreen,
@@ -55,29 +106,19 @@ const SpaceDashboardScreen = lazy(() =>
   }))
 );
 const SpaceSettingsScreen = lazy(() =>
-  import('./features/spaces/SpaceSettingsScreen.tsx').then(m => ({
-    default: m.SpaceSettingsScreen,
-  }))
+  chargeSpaceSettings().then(m => ({ default: m.SpaceSettingsScreen }))
 );
 const SettingsScreen = lazy(() =>
-  import('./features/settings/SettingsScreen.tsx').then(m => ({
-    default: m.SettingsScreen,
-  }))
+  chargeSettings().then(m => ({ default: m.SettingsScreen }))
 );
 const AboutScreen = lazy(() =>
-  import('./features/about/AboutScreen.tsx').then(m => ({
-    default: m.AboutScreen,
-  }))
+  chargeAbout().then(m => ({ default: m.AboutScreen }))
 );
 const AccountScreen = lazy(() =>
-  import('./features/account/AccountScreen.tsx').then(m => ({
-    default: m.AccountScreen,
-  }))
+  chargeAccount().then(m => ({ default: m.AccountScreen }))
 );
 const ParticipantsScreen = lazy(() =>
-  import('./features/people/ParticipantsScreen.tsx').then(m => ({
-    default: m.ParticipantsScreen,
-  }))
+  chargeParticipants().then(m => ({ default: m.ParticipantsScreen }))
 );
 const GroupsScreen = lazy(() =>
   import('./features/people/GroupsScreen.tsx').then(m => ({
@@ -85,9 +126,7 @@ const GroupsScreen = lazy(() =>
   }))
 );
 const ExpensesScreen = lazy(() =>
-  import('./features/expenses/ExpensesScreen.tsx').then(m => ({
-    default: m.ExpensesScreen,
-  }))
+  chargeExpenses().then(m => ({ default: m.ExpensesScreen }))
 );
 const ExpenseWizardScreen = lazy(() =>
   import('./features/expenses/ExpenseWizardScreen.tsx').then(m => ({
@@ -100,14 +139,10 @@ const ExpenseDetailScreen = lazy(() =>
   }))
 );
 const BalancesScreen = lazy(() =>
-  import('./features/balances/BalancesScreen.tsx').then(m => ({
-    default: m.BalancesScreen,
-  }))
+  chargeBalances().then(m => ({ default: m.BalancesScreen }))
 );
 const SettlementsScreen = lazy(() =>
-  import('./features/balances/SettlementsScreen.tsx').then(m => ({
-    default: m.SettlementsScreen,
-  }))
+  chargeSettlements().then(m => ({ default: m.SettlementsScreen }))
 );
 const InvitationsScreen = lazy(() =>
   import('./features/invitations/InvitationsScreen.tsx').then(m => ({
@@ -120,9 +155,7 @@ const AcceptInvitationScreen = lazy(() =>
   }))
 );
 const ActivityScreen = lazy(() =>
-  import('./features/activity/ActivityScreen.tsx').then(m => ({
-    default: m.ActivityScreen,
-  }))
+  chargeActivity().then(m => ({ default: m.ActivityScreen }))
 );
 const OfflineScreen = lazy(() =>
   import('./features/sync/OfflineScreen.tsx').then(m => ({
@@ -130,10 +163,94 @@ const OfflineScreen = lazy(() =>
   }))
 );
 const StatsScreen = lazy(() =>
-  import('./features/stats/StatsScreen.tsx').then(m => ({
-    default: m.StatsScreen,
-  }))
+  chargeStats().then(m => ({ default: m.StatsScreen }))
 );
+
+/** `navigator.connection` n'est pas dans les types du DOM : il reste un brouillon. */
+type NavigateurEconome = Navigator & { connection?: { saveData?: boolean } };
+
+/**
+ * PRÉCHARGE LES ÉCRANS DE LA BARRE DÈS QUE LE FIL PRINCIPAL SOUFFLE.
+ *
+ * LE DÉFAUT QUE CECI CORRIGE. Sans préchargement, le morceau d'un écran n'est
+ * demandé qu'AU CLIC. Mesuré à froid le 20/09/2026 sur https://mister-guiiug.github.io/mister-settle/,
+ * première visite, service worker pas encore installé : le clic sur « Réglages »
+ * demande `SettingsScreen`, 1 644 octets — et coûte pourtant 133 ms, parce que
+ * ce n'est pas du poids mais un aller-retour réseau complet, payé au pire
+ * moment. Pendant ces 133 ms l'URL disait déjà `/reglages` et l'écran affichait
+ * encore « Mes espaces », sans rien pour le dire (voir le `<Suspense>`
+ * ci-dessous).
+ *
+ * N'entre PAS dans `bundleBudget.preloadGzipKb` : ce budget ne compte que ce
+ * qui est `modulepreload` dans le document, et un `import()` tardif n'y entre
+ * pas.
+ */
+function usePrechargeLesEcransDuMenu(dansUnEspace: boolean) {
+  useEffect(() => {
+    // `saveData` : le visiteur a demandé qu'on épargne son forfait. On ne
+    // télécharge alors que ce qu'il demande vraiment — et c'est précisément
+    // pour ce cas-là que la barre, elle, sait désormais dire qu'elle charge.
+    if ((navigator as NavigateurEconome).connection?.saveData) return;
+
+    let annule = false;
+    const chargeurs = dansUnEspace
+      ? CHARGEURS_DANS_UN_ESPACE
+      : CHARGEURS_HORS_ESPACE;
+    const precharge = () => {
+      if (annule) return;
+      // Un échec ici est sans conséquence : au clic, `lazy` redemandera le
+      // morceau et c'est LUI qui portera l'erreur, dans son propre `Suspense`.
+      for (const charge of chargeurs) void charge().catch(() => {});
+    };
+
+    // `requestIdleCallback` manque encore à Safari avant la 17 ; le repli
+    // minuté vaut mieux que rien.
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(precharge, { timeout: 3000 });
+      return () => {
+        annule = true;
+        window.cancelIdleCallback?.(id);
+      };
+    }
+    const id = window.setTimeout(precharge, 1200);
+    return () => {
+      annule = true;
+      window.clearTimeout(id);
+    };
+  }, [dansUnEspace]);
+}
+
+/**
+ * Le geste de navigation de la barre, porté jusqu'au `linkComponent` du socle.
+ *
+ * POURQUOI UN CONTEXTE. `BottomNav` construit lui-même le `onClick` de chaque
+ * lien — `onClick: () => { setMoreOpen(false); onNavigate?.(item); }`, SANS
+ * l'événement — donc ni `preventDefault`, ni touche de modification, ni
+ * transition ne peuvent passer par `onNavigate`. Le seul point d'entrée qui
+ * reçoit l'événement est le composant de lien. Un contexte l'atteint sans
+ * redéfinir le composant à chaque rendu (ce qui le remonterait, et perdrait le
+ * focus au clavier).
+ */
+const NavigationDuMenu = createContext<{
+  versLaVue: (e: MouseEvent<HTMLAnchorElement>, to: string) => void;
+  enAttente: string | null;
+} | null>(null);
+
+function LienDeMenu({ to, onClick, ...reste }: ComponentProps<typeof Link>) {
+  const menu = useContext(NavigationDuMenu);
+  const cible = typeof to === 'string' ? to : '';
+  return (
+    <Link
+      to={to}
+      aria-busy={menu?.enAttente === cible || undefined}
+      onClick={e => {
+        onClick?.(e);
+        menu?.versLaVue(e, cible);
+      }}
+      {...reste}
+    />
+  );
+}
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse — les trois viennent du socle
@@ -146,7 +263,12 @@ const StatsScreen = lazy(() =>
  * l'accueil et « À propos », une ligne dans chacun. `pwa-doctor` refuse la
  * coquille depuis.
  */
-function Shell() {
+/**
+ * Exportée POUR ÊTRE ÉPROUVÉE : `App.nav.test.tsx` la monte face à un écran
+ * dont il décide lui-même de l'arrivée, ce qu'on ne peut pas faire à travers
+ * `App` sans mettre la main dans le registre de modules.
+ */
+export function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
   // Une vue de page par navigation — ni zéro, ni deux. `initAnalytics` pose
@@ -170,6 +292,46 @@ function Shell() {
   const inSpace = matchPath({ path: '/e/:spaceId', end: false }, pathname);
   const spaceId = inSpace?.params.spaceId;
   const space = useSpaces(state => state.spaces.find(s => s.id === spaceId));
+  usePrechargeLesEcransDuMenu(Boolean(spaceId));
+
+  const navigate = useNavigate();
+  const [enCours, demarreLaTransition] = useTransition();
+  const [ciblePendante, setCiblePendante] = useState<string | null>(null);
+
+  /**
+   * LA TRANSITION EST LA NÔTRE, et c'est tout l'intérêt.
+   *
+   * react-router 7 en ouvre déjà une de son côté — `startTransition(() =>
+   * setStateImpl(newState))` dans son `BrowserRouter` — mais ne l'expose nulle
+   * part hors d'un routeur de données. Or React 19 garde délibérément l'écran
+   * déjà affiché pendant une transition : le repli de `<Suspense>` ne paraît
+   * donc JAMAIS sur un clic, seulement sur un atterrissage direct. Mesuré sur
+   * le site publié le 20/09/2026 : 133 ms d'écran figé, `aria-busy` faux d'un
+   * bout à l'autre.
+   *
+   * En pilotant `navigate` depuis ici, `enCours` reste vrai tant que le morceau
+   * de l'écran n'est pas arrivé : c'est la seule information qui manquait.
+   */
+  const versLaVue = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>, to: string) => {
+      // On laisse le navigateur faire son travail quand le visiteur le lui
+      // demande : nouvel onglet, nouvelle fenêtre, enregistrement de la cible.
+      if (
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      ) {
+        return;
+      }
+      e.preventDefault();
+      setCiblePendante(to);
+      demarreLaTransition(() => navigate(to));
+    },
+    [navigate]
+  );
 
   const appNav = [
     {
@@ -398,13 +560,39 @@ function Shell() {
         />
       </PageContainer>
 
-      <BottomNav
-        items={spaceNav}
-        moreLabel={t('nav.more')}
-        linkComponent={Link}
-        hrefProp="to"
-        placement="fixed"
-      />
+      <NavigationDuMenu.Provider
+        value={{ versLaVue, enAttente: enCours ? ciblePendante : null }}
+      >
+        <BottomNav
+          // LA PASTILLE DE L'ENTRÉE CLIQUÉE TOURNE pendant que son morceau
+          // arrive. C'est le seul retour visible : le repli de `Suspense` ne
+          // paraîtra pas, React 19 gardant l'écran courant le temps de la
+          // transition.
+          items={spaceNav.map(item =>
+            enCours && ciblePendante === item.href
+              ? {
+                  ...item,
+                  icon: (
+                    <LoaderCircle aria-hidden="true" className="animate-spin" />
+                  ),
+                }
+              : item
+          )}
+          moreLabel={t('nav.more')}
+          // `LienDeMenu` — le `Link` de react-router, plus le geste qui ouvre
+          // la transition. Le socle ne passe pas l'événement à `onNavigate` :
+          // le composant de lien est le seul endroit qui l'ait.
+          linkComponent={LienDeMenu}
+          hrefProp="to"
+          placement="fixed"
+        />
+      </NavigationDuMenu.Provider>
+      {/* HORS DES LIENS, pour ne pas changer leur nom accessible en cours de
+          route : un lecteur d'écran annoncerait « Dépenses, chargement… » puis
+          « Dépenses », sur le lien qui a le focus. */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {enCours ? t('nav.loading') : ''}
+      </span>
     </>
   );
 }

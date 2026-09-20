@@ -31,6 +31,7 @@ const fr = {
     people: 'Personnes',
     settle: 'Régler',
     more: 'Plus',
+    loading: 'Chargement…',
     spaceSettings: 'Réglages de l’espace',
   },
   errors: {
@@ -697,6 +698,7 @@ const en: typeof fr = {
     people: 'People',
     settle: 'Settle up',
     more: 'More',
+    loading: 'Loading…',
     spaceSettings: 'Space settings',
   },
   errors: {
