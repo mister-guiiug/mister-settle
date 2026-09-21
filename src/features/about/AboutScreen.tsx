@@ -49,11 +49,16 @@ export function AboutScreen() {
           décrit une anomalie — version et commit — part toujours prérempli
           dans le rapport de bug ouvert par `AppFooter issues`. */}
 
+      {/* Cette app n'a jamais réécrit l'habillage de la grille : elle prend la
+          base du paquet telle quelle, et n'a donc pas besoin de `layout`. Ne
+          manquait que le repli — dix-neuf cartes d'affilée font un mur, sept
+          lignes non. Les liens dépôt par carte les suivent dans leur groupe. */}
       <FamilyApps
         currentAppId={APP_ID}
         repoUrl={REPO_URL}
         showSource={false}
         showRepoLinks
+        groupBy="category"
       />
 
       <AppFooter repoUrl={REPO_URL} issues />
