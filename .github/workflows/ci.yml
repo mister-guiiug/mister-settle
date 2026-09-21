@@ -21,3 +21,8 @@ jobs:
       # Les e2e du squelette tournent en CI : c'est lui qui doit prouver que la
       # suite marche, avant qu'une app ne la copie.
       run-e2e: true
+      # Second avis TypeScript 7, NON BLOQUANT. La 6 reste la référence : c'est
+      # elle que typescript-eslint résout, et il refuse la 7.0 par une assertion
+      # à l'import. Le jour où typescript-eslint#10940 se ferme, cette entrée
+      # et l'alias `typescript-7` disparaissent ensemble.
+      run-type-check-7: true
