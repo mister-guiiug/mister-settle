@@ -64,10 +64,35 @@ export default defineConfig(({ command }) => {
        * de l'entrée — mesuré le 16/09/2026 sur miss-ticket-pwa, 435,4 kB
        * préchargés au lieu de 280,1, l'`import()` paresseux défait par le fait
        * même de nommer. `resolveDependencies` l'en retire.
+       *
+       * ET IL FAUT UNE TROISIÈME OPTION, parce que les deux premières
+       * fabriquaient une URL QUI MEURT À CHAQUE DÉPLOIEMENT.
+       *
+       * Le morceau Sentry est le SEUL que l'entrée référence sans qu'il soit
+       * précaché — c'était le but. Mais son nom portait une empreinte de
+       * contenu. Le service worker sert la coquille précachée jusqu'à ce que
+       * l'utilisateur accepte la mise à jour ; cette coquille demande l'ANCIENNE
+       * empreinte, que le déploiement suivant a supprimée de `assets/`. Mesuré
+       * en production sur mister-qowa le 22/09/2026 : HTTP 404, et « Échec du
+       * chargement pour le module » dans la console. `initSentry` avale l'échec
+       * (son `try/catch`), donc l'application ne casse pas — elle rapporte
+       * simplement ses erreurs à personne, sans le dire.
+       *
+       * Un nom SANS empreinte supprime la cause : l'URL ne change plus, le
+       * déploiement écrase le fichier, et la coquille périmée charge la version
+       * courante. Rien n'est perdu au cache, parce qu'il n'y avait rien à
+       * gagner : GitHub Pages répond `Cache-Control: max-age=600` sur TOUS les
+       * fichiers, empreinte ou pas — mesuré, pas supposé.
+       *
+       * Les trois options se lisent ensemble ou pas du tout : le filtre
+       * ci-dessous et le `globIgnores` plus bas visaient `sentry-*`, motif que ce
+       * fichier ne porte plus. Ils acceptent désormais les deux formes, pour
+       * qu'un retour de l'empreinte ne les rende pas muets en silence.
+       * `pwa-doctor` contrôle l'invariant depuis le socle (`chunk-hors-precache`).
        */
       modulePreload: {
         resolveDependencies: (_fichier: string, deps: string[]) =>
-          deps.filter(d => !/sentry-/.test(d)),
+          deps.filter(d => !/(^|\/)sentry(-[\w-]+)?\.js$/.test(d)),
       },
       rollupOptions: {
         output: {
@@ -76,6 +101,10 @@ export default defineConfig(({ command }) => {
               ? 'sentry'
               : undefined;
           },
+          chunkFileNames: chunk =>
+            chunk.name === 'sentry'
+              ? 'assets/sentry.js'
+              : 'assets/[name]-[hash].js',
         },
       },
     },
@@ -144,7 +173,11 @@ export default defineConfig(({ command }) => {
          * `pwaBaseOptions` ne touche pas à `workbox` : ce bloc ne remplace donc
          * rien, il ajoute la seule clé qui manquait.
          */
-        workbox: { globIgnores: ['**/sentry-*.js'] },
+        // Le motif accepte les DEUX formes de nom : le fichier s'appelle
+        // désormais `sentry.js`, sans empreinte (cf. `chunkFileNames`), et
+        // `sentry-*` reste accepté pour qu'un retour de l'empreinte ne fasse pas
+        // entrer 158 kB de SDK dans le précache sans que rien ne le signale.
+        workbox: { globIgnores: ['**/sentry.js', '**/sentry-*.js'] },
       }),
 
       ...(analyze
