@@ -48,6 +48,9 @@ export function HomeScreen() {
   if (needsSignIn) {
     return (
       <>
+        {/* CE QUE FAIT L'APP, avant l'invitation à se connecter : c'est tout
+            ce que voit un premier visiteur, et tout ce que lit un moteur. */}
+        <p className="m-0 text-base">{t('spaces.pitch')}</p>
         <EmptyState
           title={t('spaces.signInTitle')}
           description={t('spaces.signInBody')}

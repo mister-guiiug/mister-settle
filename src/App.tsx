@@ -46,6 +46,7 @@ import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { SyncStatusBadge } from '@mister-guiiug/dev-pwa-config/react/sync-status-badge';
 import { useOnline } from '@mister-guiiug/dev-pwa-config/react/use-online';
 import { useIdlePrefetch } from '@mister-guiiug/dev-pwa-config/react/use-prefetch';
+import { useAuthContext } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
 import { isRemote } from './backend/index.ts';
@@ -230,6 +231,9 @@ function LienDeMenu({ to, onClick, ...reste }: ComponentProps<typeof Link>) {
 export function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+  const { signedIn, ready: authReady } = useAuthContext();
+  // Même condition que `HomeScreen` : une base partagée et pas de session.
+  const horsSession = isRemote && authReady && !signedIn;
   // Une vue de page par navigation — ni zéro, ni deux. `initAnalytics` pose
   // `capture_pageview: false` pour que toutes passent par ici, la première
   // comprise : laissé à lui-même, PostHog compterait chaque navigation deux
@@ -370,7 +374,11 @@ export function Shell() {
     : appNav;
 
   const title = (() => {
-    if (matchPath('/', pathname)) return t('spaces.title');
+    // Hors session, l'accueil n'a pas d'espaces à montrer : « Mes espaces »
+    // y était un titre vide de sens, et le h1 de la page que lit un moteur
+    // (relevé du 23/09/2026). Le nom de l'app le remplace.
+    if (matchPath('/', pathname))
+      return horsSession ? t('spaces.publicTitle') : t('spaces.title');
     if (matchPath('/espaces/nouveau', pathname)) return t('newSpace.title');
     if (matchPath('/reglages', pathname)) return t('settings.title');
     if (matchPath('/compte', pathname)) return t('account.title');
