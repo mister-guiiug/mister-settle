@@ -3,10 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
-import {
-  NAVIGATE_FALLBACK_DENY_FILES,
-  pwaBaseOptions,
-} from '@mister-guiiug/dev-pwa-config/vite-pwa';
+import { pwaBaseOptions } from '@mister-guiiug/dev-pwa-config/vite-pwa';
 import {
   pwaSeoPlugin,
   spaFallbackPlugin,
@@ -43,6 +40,27 @@ export default defineConfig(({ command }) => {
   } else if (command === 'build') {
     basePath = `/${APP_ID}/`;
   }
+
+  /*
+   * LE BLOC `workbox` DU SOCLE EST ÉTENDU, JAMAIS REMPLACÉ. Jusqu'au
+   * 24/09/2026, `workbox: { … }` posé à côté de `...pwaBaseOptions()`
+   * écrasait tout l'objet du socle. Le service worker publié n'avait ni le
+   * cache d'images, ni les exclusions de précache du socle, ni son repli de
+   * navigation : il tournait sur les défauts nus de vite-plugin-pwa.
+   *
+   * `basePath` suit la base réelle du build. Sans lui, le repli du socle vise
+   * `/mister-settle/index.html` même quand la CI construit à la racine : une
+   * URL absente du précache, et un worker qui échoue à l'installation.
+   */
+  const pwa = pwaBaseOptions({
+    id: APP_ID,
+    basePath,
+    // SANS `name`, LE MANIFESTE PREND L'IDENTIFIANT : le socle retombe sur
+    // `id` (`name ?? shortName ?? id`), et l'écran d'accueil affichait
+    // « mister-settle ». Le catalogue connaît pourtant le vrai nom — c'est
+    // une amélioration à porter au socle, pas ici.
+    name: 'Mister Settle',
+  });
 
   return {
     base: basePath,
@@ -158,14 +176,7 @@ export default defineConfig(({ command }) => {
       //     d'installation — une fiche au lieu d'une ligne et un bouton — et
       //     `npm run screenshots` les régénère depuis un build.
       VitePWA({
-        ...pwaBaseOptions({
-          id: APP_ID,
-          // SANS `name`, LE MANIFESTE PREND L'IDENTIFIANT : le socle retombe
-          // sur `id` (`name ?? shortName ?? id`), et l'écran d'accueil
-          // affichait « mister-settle ». Le catalogue connaît pourtant le vrai
-          // nom — c'est une amélioration à porter au socle, pas ici.
-          name: 'Mister Settle',
-        }),
+        ...pwa,
         /*
          * LE MORCEAU SENTRY HORS DU PRÉCACHE, sans quoi tout le découpage
          * ci-dessus ne servirait à rien : Workbox ramasse TOUT le JS émis,
@@ -173,17 +184,21 @@ export default defineConfig(({ command }) => {
          * apps du parc, 345 et 463 KiB de SDK téléchargés par chaque visiteur,
          * sans qu'aucun DSN soit posé.
          *
-         * `pwaBaseOptions` ne touche pas à `workbox` : ce bloc ne remplace donc
-         * rien, il ajoute la seule clé qui manquait.
+         * AJOUTÉ aux exclusions du socle (`version.json`, `node_modules`), pas
+         * à leur place : `workbox` s'étale À PLAT, une liste de l'app
+         * remplacerait la sienne.
          */
         // Le motif accepte les DEUX formes de nom : le fichier s'appelle
         // désormais `sentry.js`, sans empreinte (cf. `chunkFileNames`), et
         // `sentry-*` reste accepté pour qu'un retour de l'empreinte ne fasse pas
         // entrer 158 kB de SDK dans le précache sans que rien ne le signale.
         workbox: {
-          // Un fichier (sitemap.xml, llms.txt…) va au réseau, pas à index.html.
-          navigateFallbackDenylist: [NAVIGATE_FALLBACK_DENY_FILES],
-          globIgnores: ['**/sentry.js', '**/sentry-*.js'],
+          ...pwa.workbox,
+          globIgnores: [
+            ...(pwa.workbox.globIgnores as string[]),
+            '**/sentry.js',
+            '**/sentry-*.js',
+          ],
         },
       }),
 
