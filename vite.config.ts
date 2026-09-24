@@ -3,7 +3,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { pwaBaseOptions } from '@mister-guiiug/dev-pwa-config/vite-pwa';
+import {
+  NAVIGATE_FALLBACK_DENY_FILES,
+  pwaBaseOptions,
+} from '@mister-guiiug/dev-pwa-config/vite-pwa';
 import {
   pwaSeoPlugin,
   spaFallbackPlugin,
@@ -177,7 +180,11 @@ export default defineConfig(({ command }) => {
         // désormais `sentry.js`, sans empreinte (cf. `chunkFileNames`), et
         // `sentry-*` reste accepté pour qu'un retour de l'empreinte ne fasse pas
         // entrer 158 kB de SDK dans le précache sans que rien ne le signale.
-        workbox: { globIgnores: ['**/sentry.js', '**/sentry-*.js'] },
+        workbox: {
+          // Un fichier (sitemap.xml, llms.txt…) va au réseau, pas à index.html.
+          navigateFallbackDenylist: [NAVIGATE_FALLBACK_DENY_FILES],
+          globIgnores: ['**/sentry.js', '**/sentry-*.js'],
+        },
       }),
 
       ...(analyze
