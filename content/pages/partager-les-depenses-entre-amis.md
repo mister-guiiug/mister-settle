@@ -70,7 +70,7 @@ Trois virements pour quatre personnes. Cette méthode ne demande jamais plus de 
 
 ## Comment Mister Settle vous aide
 
-Mister Settle fait ces calculs pour vous, sans jamais toucher à l'argent : les remboursements se font en dehors de l'application.
+[Mister Settle](https://mister-guiiug.github.io/mister-settle/) fait ces calculs pour vous, sans jamais toucher à l'argent : les remboursements se font en dehors de l'application.
 
 - **Des espaces** pour chaque occasion (voyage, colocation, famille), avec des personnes qui n'ont pas besoin de compte, et des regroupements comme « la famille » ou « les enfants » pour les sélectionner plus vite.
 - **Une dépense en trois étapes** : quoi et combien, qui a payé (une ou plusieurs personnes) et pour qui, puis la synthèse. Trois modèles de répartition : équitable, par montants, par parts.
