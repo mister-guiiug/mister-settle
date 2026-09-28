@@ -29,7 +29,9 @@ Elle est servie sur <https://mister-guiiug.github.io/mister-settle/>.
 - **Des invitations** par lien, avec un rôle — lecture, contribution,
   administration — révocables.
 - **Hors ligne** : ce qui a été ouvert se relit, un brouillon reste sur
-  l'appareil, une création attend le réseau puis part une seule fois.
+  l'appareil, une nouvelle dépense attend le réseau puis part une seule fois ;
+  valider une répartition, déclarer un remboursement ou inviter demande le
+  réseau.
 
 ## Ce qu'elle ne fait jamais
 
@@ -42,7 +44,8 @@ suggestions ; l'argent circule ailleurs, entre les personnes.
 
 **Sur l'appareil seul** : sans compte, tout vit dans le navigateur — un
 espace, ses personnes, ses dépenses. L'export et l'import de fichier (Réglages)
-font passer le tout d'un appareil à l'autre.
+font passer les espaces, leurs personnes et leurs dépenses d'un appareil à
+l'autre ; les photos des justificatifs restent sur l'appareil d'origine.
 
 **Avec une base partagée** (le site publié) : un compte, des espaces qui
 suivent d'un appareil à l'autre, des membres invités par lien. La base décide
@@ -81,9 +84,15 @@ tests pgTAP de la base sur une pile jetable.
 Le schéma, ses politiques et ses fonctions vivent dans `supabase/` et
 s'appliquent au projet par le workflow `supabase-migrations.yml`. Le dépôt
 attend, en **variables** : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
-`SUPABASE_PROJECT_ID` ; en **secrets** : `SUPABASE_ACCESS_TOKEN`,
-`SUPABASE_DB_PASSWORD`. Le déploiement passe les deux `VITE_*` au build ; sans
-elles, le site tourne quand même, sur l'appareil.
+`SUPABASE_PROJECT_ID`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY` ; en **secret** :
+`SUPABASE_DB_PASSWORD` (les migrations passent par le pooler ; aucun workflow
+ne lit plus `SUPABASE_ACCESS_TOKEN`). Le déploiement passe les quatre `VITE_*`
+au build ; sans celles de Supabase, le site tourne quand même, sur l'appareil.
+
+Sur le site publié, Sentry (région européenne) démarre à l'ouverture, sans
+consentement : il signale la session et reçoit un rapport quand une erreur
+survient. PostHog (nuage européen) ne mesure l'audience qu'après accord dans le
+bandeau.
 
 ## Les décisions
 
