@@ -90,9 +90,8 @@ ne lit plus `SUPABASE_ACCESS_TOKEN`). Le déploiement passe les quatre `VITE_*`
 au build ; sans celles de Supabase, le site tourne quand même, sur l'appareil.
 
 Sur le site publié, Sentry (région européenne) démarre à l'ouverture, sans
-consentement : il signale la session et reçoit un rapport quand une erreur
-survient. PostHog (nuage européen) ne mesure l'audience qu'après accord dans le
-bandeau.
+consentement, et ne reçoit un rapport que lorsqu'une erreur survient. PostHog
+(nuage européen) ne mesure l'audience qu'après accord dans le bandeau.
 
 ## Les décisions
 
