@@ -141,6 +141,19 @@ export default defineConfig(({ command }) => {
         basePath,
         logoPath: '/icons/icon-512.png',
         themeColor: { light: '#f7f8fa', dark: '#0f1115' },
+        // « À propos » est une vraie URL, lisible sans session : sans fichier,
+        // GitHub Pages la servait en 404 (le repli SPA garde ce statut). Le
+        // socle l'écrit au build avec son titre et sa description, et la met
+        // au plan de site.
+        routes: [
+          {
+            path: 'a-propos',
+            title:
+              'À propos de Mister Settle : partage de dépenses sans argent',
+            description:
+              'Mister Settle répartit les dépenses d’un groupe (voyage, colocation, famille) et calcule qui doit quoi à qui, sans jamais manipuler d’argent. Gratuit.',
+          },
+        ],
       }),
 
       // `frame-ancestors` est volontairement absent : la spécification
