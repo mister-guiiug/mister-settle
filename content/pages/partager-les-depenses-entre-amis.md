@@ -1,6 +1,9 @@
 ---
 title: Partager les dépenses entre amis : qui doit combien à qui
 description: Voyage, colocation, week-end : la méthode simple pour partager les dépenses entre amis, calculer les soldes et trouver les remboursements, exemple chiffré.
+date: 2026-09-25
+updated: 2026-09-29
+answer: Pour partager les dépenses entre amis, notez chaque dépense avec qui a payé et qui en profite, puis calculez le solde de chacun, ce qu'il a payé moins ce qu'il doit. La somme des soldes vaut zéro. Le plus gros débiteur rembourse ensuite le plus gros créancier, sans dépasser un virement de moins que de personnes.
 ---
 
 # Partager les dépenses entre amis : la méthode pour savoir qui doit combien
@@ -61,6 +64,8 @@ Dans l'exemple :
 
 Trois virements pour quatre personnes. Cette méthode ne demande jamais plus de virements que le nombre de personnes moins un. Elle ne trouve pas toujours le minimum absolu, mais elle est facile à suivre et donne toujours le même résultat.
 
+Pour ces virements, depuis le 9 janvier 2025, un virement instantané en euros ne coûte pas plus cher qu'un virement classique ; depuis le 9 octobre 2025, la banque vérifie aussi que le nom du bénéficiaire correspond à son IBAN.
+
 ## Les cas qui compliquent les comptes
 
 - **Une personne ne participe qu'à une partie du séjour** : ne la comptez que dans les dépenses qui la concernent.
@@ -102,3 +107,9 @@ Non. L'application calcule les dépenses, les soldes et les remboursements sugg�
 ### Peut-on utiliser Mister Settle sans réseau ?
 
 En partie. Les espaces déjà ouverts se relisent sans réseau, et une nouvelle dépense attend le retour de la connexion pour partir. Valider une répartition, déclarer un remboursement ou inviter quelqu'un demande le réseau.
+
+## Sources
+
+- [Les virements instantanés au tarif des virements classiques](https://www.service-public.gouv.fr/particuliers/actualites/A17985) : Service Public, 9 janvier 2025.
+- [La vérification du bénéficiaire des virements](https://www.service-public.gouv.fr/particuliers/actualites/A18474) : Service Public, obligation au 9 octobre 2025.
+- [Colocation : les règles](https://www.service-public.gouv.fr/particuliers/vosdroits/F34661) : pacte de colocation, dépenses communes et compte joint.
