@@ -23,6 +23,16 @@
  * repeignant ces rôles — jamais en redéclarant ses propres variables à côté,
  * ce qui laisserait les composants du socle sur les valeurs par défaut et
  * ferait deux thèmes qui divergent en silence.
+ *
+ * UN RÔLE ABSENT D'ICI N'EXISTE PAS. Cette feuille n'importe pas `tokens.css` :
+ * ce que la palette ne peint pas, les composants le remplacent par leur repli.
+ * Pour `--dwc-border-strong`, ce repli était `--dwc-border`, et le pourtour
+ * d'un champ tombait à 1,3:1 au lieu des 3:1 de WCAG 1.4.11. Relevé le
+ * 02/10/2026 ; le défaut venait du squelette (pwa-starter-kit#88), et axe ne
+ * mesure pas le contraste d'un contour : rien ne l'avait vu. Les autres rôles
+ * que lisent les composants sans être peints ici (`--dwc-primary-soft`,
+ * `--dwc-info`, le rayon, l'ombre, la hauteur de l'en-tête) ont des replis
+ * sans enjeu de contraste.
  */
 @theme {
   --color-primary: #3b6ea5;
@@ -39,6 +49,9 @@
   --dwc-text: #131720;
   --dwc-text-soft: #5a6472;
   --dwc-border: #d9dfe7;
+  /* Le pourtour d'un contrôle, 3:1 au moins : 3,77 sur la surface, 3,55 sur
+     le fond, 3,33 sur `surface-2`, le fond des champs. */
+  --dwc-border-strong: #7e848d;
   --dwc-primary: #3b6ea5;
   --dwc-primary-contrast: #ffffff;
   --dwc-danger: #b3261e;
@@ -55,6 +68,8 @@
   --dwc-text: #e8ecf2;
   --dwc-text-soft: #a3adbb;
   --dwc-border: #2c333d;
+  /* 4,15 sur la surface, 4,55 sur le fond, 3,75 sur `surface-2`. */
+  --dwc-border-strong: #767d87;
   --dwc-primary: #7fb0e0;
   --dwc-primary-contrast: #0f1115;
   --dwc-danger: #f2b8b5;
