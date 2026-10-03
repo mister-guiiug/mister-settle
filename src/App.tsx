@@ -450,7 +450,7 @@ export function Shell() {
                 aria-label={t('nav.home')}
                 title={t('nav.home')}
                 className="flex items-center no-underline"
-                style={{ color: 'var(--dwc-text)' }}
+                style={{ color: 'currentColor' }}
               >
                 <Home size={20} aria-hidden="true" />
               </Link>

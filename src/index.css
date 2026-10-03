@@ -34,58 +34,95 @@
  * `--dwc-info`, le rayon, l'ombre, la hauteur de l'en-tête) ont des replis
  * sans enjeu de contraste.
  */
+/*
+ * DIRECTION LEDGER (DESIGN.md, 28/03/2026) : navy + teal, IBM Plex, montants
+ * mono. On repeint les rôles du socle ; on n'invente pas une seconde palette.
+ */
 @theme {
-  --color-primary: #3b6ea5;
-  --color-primary-soft: #dce8f5;
-  --radius-card: 0.875rem;
+  --color-primary: #0d9488;
+  --color-primary-soft: #d9f3ef;
+  --radius-card: 0.75rem;
 }
 
 :root {
   color-scheme: light;
 
-  --dwc-bg: #f7f8fa;
+  --dwc-bg: #f4f6f8;
   --dwc-surface: #ffffff;
-  --dwc-surface-2: #eef1f5;
-  --dwc-text: #131720;
-  --dwc-text-soft: #5a6472;
-  --dwc-border: #d9dfe7;
-  /* Le pourtour d'un contrôle, 3:1 au moins : 3,77 sur la surface, 3,55 sur
-     le fond, 3,33 sur `surface-2`, le fond des champs. */
-  --dwc-border-strong: #7e848d;
-  --dwc-primary: #3b6ea5;
+  --dwc-surface-2: #eef2f5;
+  --dwc-text: #0b1f33;
+  --dwc-text-soft: #5a6b7d;
+  --dwc-border: #d5dde6;
+  /* Contour contrôles ≥ 3:1 : ~5,5 sur surface, ~5,1 sur fond, ~4,9 sur
+     surface-2 (mesuré dans palette.test.ts). */
+  --dwc-border-strong: #5a6b7d;
+  --dwc-primary: #0d9488;
+  --dwc-primary-soft: #d9f3ef;
   --dwc-primary-contrast: #ffffff;
-  --dwc-danger: #b3261e;
-  --dwc-success: #1b6b3a;
-  --dwc-warning: #8a5a00;
+  --dwc-danger: #b42318;
+  --dwc-success: #0f766e;
+  --dwc-warning: #b54708;
+
+  /* Chrome d'en-tête Ledger — navy, pas la surface de page. */
+  --settle-header-bg: #0b1f33;
+  --settle-header-fg: #f4f7fa;
+  --font-sans:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --dwc-bg: #0f1115;
-  --dwc-surface: #171b22;
-  --dwc-surface-2: #1f242d;
-  --dwc-text: #e8ecf2;
-  --dwc-text-soft: #a3adbb;
-  --dwc-border: #2c333d;
-  /* 4,15 sur la surface, 4,55 sur le fond, 3,75 sur `surface-2`. */
-  --dwc-border-strong: #767d87;
-  --dwc-primary: #7fb0e0;
-  --dwc-primary-contrast: #0f1115;
+  --dwc-bg: #0b1f33;
+  --dwc-surface: #12263a;
+  --dwc-surface-2: #1a3348;
+  --dwc-text: #e8eef4;
+  --dwc-text-soft: #9aadc0;
+  --dwc-border: #2a455c;
+  /* ~5,4 sur surface, ~5,8 sur fond, ~4,5 sur surface-2. */
+  --dwc-border-strong: #8a9aab;
+  --dwc-primary: #2dd4bf;
+  --dwc-primary-soft: #134e4a;
+  --dwc-primary-contrast: #0b1f33;
   --dwc-danger: #f2b8b5;
-  --dwc-success: #7fd6a0;
-  --dwc-warning: #e8c07d;
+  --dwc-success: #5eead4;
+  --dwc-warning: #f0c674;
+
+  --settle-header-bg: #071525;
+  --settle-header-fg: #e8eef4;
 }
 
 body {
   margin: 0;
   background: var(--dwc-bg);
   color: var(--dwc-text);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
+  font-family: var(--font-sans);
+}
+
+/*
+ * EN-TÊTE LEDGER : navy opaque, texte clair. Les actions doivent HÉRITER
+ * (`currentColor`), pas forcer `--dwc-text` du thème page — sinon icônes
+ * navy sur fond navy.
+ */
+[data-dwc='app-header'] {
+  background: var(--settle-header-bg);
+  color: var(--settle-header-fg);
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--settle-header-fg) 14%,
+    var(--settle-header-bg)
+  );
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Montants et soldes : mono tabular, alignement comptable. */
+.settle-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 /*

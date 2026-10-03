@@ -140,7 +140,8 @@ export default defineConfig(({ command }) => {
       pwaSeoPlugin({
         basePath,
         logoPath: '/icons/icon-512.png',
-        themeColor: { light: '#f7f8fa', dark: '#0f1115' },
+        // Ledger (DESIGN.md) : fond page clair / navy sombre.
+        themeColor: { light: '#f4f6f8', dark: '#0b1f33' },
         // « À propos » est une vraie URL, lisible sans session : sans fichier,
         // GitHub Pages la servait en 404 (le repli SPA garde ce statut). Le
         // socle l'écrit au build avec son titre et sa description, et la met
@@ -172,6 +173,9 @@ export default defineConfig(({ command }) => {
         analytics: true,
         connectSrc: ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'],
         imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+        // IBM Plex (Ledger) : feuilles Google Fonts + fichiers gstatic.
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
       }),
 
       // Repli SPA : sans `404.html`, rafraîchir un lien profond sert la page
