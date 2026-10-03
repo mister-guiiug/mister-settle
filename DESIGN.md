@@ -27,19 +27,23 @@ Source unique : `public/favicon.svg` (S évidé, pastille teal / vert d’eau su
 navy Ledger). Servi dans :
 
 - l’onglet (`index.html`)
-- le `leading` de `AppHeader` (`BrandMark` → `/`)
+- le `leading` de `AppHeader` (`BrandMark` → `/`), sauf accueil hors session
+- le **wordmark** h1 hors session (`Wordmark` = glyphe + nom)
+- l’héros « À propos » et les états vides (`SettleEmptyState`)
 - les PNG du manifeste (`npm run icons`, bg `11,31,51`)
+- `public/og-image.jpg` (`npx pwa-og-image`)
 
 Pas de signe dollar, pas de pièce, pas de glyphe de devise — la promesse
-« calcule, ne paie jamais » tient jusque dans le logo.
+« Calcule. Ne paie jamais. » (`app.promise`) tient jusque dans le logo.
 
-### Prochaines marches identité (backlog)
+### Identité — surfaces livrées
 
-1. **Wordmark accueil** — sur `/` hors session, titre h1 = logo + « Mister Settle » plutôt que le seul texte.
-2. **États vides** — petite marque en filigrane / illustration S (pas emoji générique).
-3. **À propos** — reprendre le logo en héros court + phrase « Calcule. Ne paie jamais. »
-4. **OG / screenshots** — régénérer `og-image` et captures après peaufinage Ledger.
-5. **Splash PWA** — tuile maskable déjà alignée navy ; vérifier le thème de la splash iOS.
+1. **Wordmark accueil** — `/` hors session : h1 = logo + « Mister Settle » (pas de leading doublon).
+2. **États vides** — `SettleEmptyState` avec S Ledger en filigrane.
+3. **À propos** — héros logo + `app.promise` + texte métier.
+4. **OG / screenshots** — `og-image.jpg` + captures manifeste régénérés Ledger.
+5. **Splash PWA** — `theme-color` / `ThemeProvider` alignés `#f4f6f8` / `#0b1f33` ;
+   status bar iOS `black-translucent` ; tuile maskable navy.
 
 ## Typography
 

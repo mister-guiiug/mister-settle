@@ -1,13 +1,14 @@
-import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
+import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
 import { FamilyApps } from '@mister-guiiug/dev-pwa-config/react/family-apps';
 import { PwaInstallPrompt } from '@mister-guiiug/dev-pwa-config/react/pwa-install-prompt';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
 import { useI18n } from '../../i18n/index.ts';
 import { APP_ID, REPO_URL } from '../../app/links.ts';
+import { BrandGlyph } from '../../components/BrandGlyph.tsx';
 
 /**
- * L'écran « à propos » : les autres apps de la famille et le pied de page —
- * code source, soutien, signalement.
+ * L'écran « à propos » : héros de marque, les autres apps de la famille et
+ * le pied de page — code source, soutien, signalement.
  *
  * `FamilyApps` est donné par le socle. Le lien du dépôt vient
  * de `repoUrl(APP_ID)` et le lien de soutien du catalogue : neuf apps sur neuf
@@ -38,9 +39,10 @@ export function AboutScreen() {
     <div className="flex flex-col gap-4">
       <PwaInstallPrompt />
 
-      <Card>
-        <CardHeader title={t('about.title')} subtitle={t('app.tagline')} />
-        <p className="m-0">{t('about.what')}</p>
+      <Card className="settle-about-hero">
+        <BrandGlyph size={72} className="settle-about-mark" />
+        <p className="settle-about-promise">{t('app.promise')}</p>
+        <p className="m-0 settle-about-what">{t('about.what')}</p>
       </Card>
 
       {/* PLUS DE CARTE « VERSION ». Le numéro portait un lien vers

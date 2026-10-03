@@ -12,7 +12,7 @@ import {
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { TextField } from '@mister-guiiug/dev-pwa-config/react/field';
 import { Sheet } from '@mister-guiiug/dev-pwa-config/react/sheet';
@@ -101,7 +101,7 @@ export function ParticipantsScreen() {
       {!ready ? (
         <SkeletonGroup label={t('people.loading')} lines={3} />
       ) : active.length === 0 ? (
-        <EmptyState
+        <SettleEmptyState
           title={t('people.empty')}
           description={t('people.emptyHint')}
         />

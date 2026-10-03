@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useI18n } from '../../i18n/index.ts';
@@ -80,7 +80,7 @@ export function ActivityScreen() {
       {entries === null ? (
         <SkeletonGroup label={t('activity.title')} lines={4} />
       ) : entries.length === 0 ? (
-        <EmptyState title={t('activity.empty')} />
+        <SettleEmptyState title={t('activity.empty')} />
       ) : (
         <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
           {entries.map(entry => (

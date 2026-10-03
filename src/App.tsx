@@ -52,6 +52,7 @@ import { useI18n } from './i18n/index.ts';
 import { isRemote } from './backend/index.ts';
 import { syncStatusOf, useSyncState } from './backend/sync-state.ts';
 import { BrandMark } from './components/BrandMark.tsx';
+import { Wordmark } from './components/Wordmark.tsx';
 import { HomeScreen } from './features/spaces/HomeScreen.tsx';
 import { SpaceShell } from './features/spaces/SpaceShell.tsx';
 import { useSpaces } from './features/spaces/store.ts';
@@ -374,12 +375,16 @@ export function Shell() {
       ]
     : appNav;
 
+  // Hors session sur `/`, le h1 EST le wordmark (logo + nom) : pas de leading
+  // BrandMark en plus, sinon le glyphe se répéterait.
+  const wordmarkHome = Boolean(horsSession && matchPath('/', pathname));
+
   const title = (() => {
     // Hors session, l'accueil n'a pas d'espaces à montrer : « Mes espaces »
     // y était un titre vide de sens, et le h1 de la page que lit un moteur
-    // (relevé du 23/09/2026). Le nom de l'app le remplace.
+    // (relevé du 23/09/2026). Le wordmark le remplace.
     if (matchPath('/', pathname))
-      return horsSession ? t('spaces.publicTitle') : t('spaces.title');
+      return horsSession ? <Wordmark /> : t('spaces.title');
     if (matchPath('/espaces/nouveau', pathname)) return t('newSpace.title');
     if (matchPath('/reglages', pathname)) return t('settings.title');
     if (matchPath('/compte', pathname)) return t('account.title');
@@ -434,11 +439,12 @@ export function Shell() {
 
       <AppHeader
         title={title}
-        leading={<BrandMark />}
+        leading={wordmarkHome ? undefined : <BrandMark />}
         actions={
           <>
             {/*
-              LE RETOUR À L'ACCUEIL VIT DANS LA MARQUE (`BrandMark` → `/`).
+              LE RETOUR À L'ACCUEIL VIT DANS LA MARQUE (`BrandMark` → `/`),
+              sauf sur l'accueil hors session où le wordmark tient déjà le h1.
               Avant, une icône maison dans les actions ne s'affichait QUE
               dans un espace ; le logo le fait partout, sans doubler l'entrée
               « Espaces » de la barre basse (refusée par l'e2e).

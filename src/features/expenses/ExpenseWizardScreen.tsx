@@ -8,7 +8,7 @@ import {
 import { createUuid } from '@mister-guiiug/dev-pwa-config/id';
 import { GESTES, trackEvent } from '@mister-guiiug/dev-pwa-config/analytics';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useToast } from '@mister-guiiug/dev-pwa-config/react/toast';
@@ -98,7 +98,9 @@ export function ExpenseWizardScreen({ mode }: { mode: WizardMode }) {
     </Link>
   );
   if (!rights.contribute || space.archivedAt) {
-    return <EmptyState title={t('expense.contributorOnly')} action={back} />;
+    return (
+      <SettleEmptyState title={t('expense.contributorOnly')} action={back} />
+    );
   }
 
   const active = participants.filter(p => !p.archivedAt).sort(byPosition);
@@ -112,7 +114,7 @@ export function ExpenseWizardScreen({ mode }: { mode: WizardMode }) {
   const sourceId = mode === 'new' ? searchParams.get('depuis') : expenseId;
   const source = sourceId ? expenses.find(e => e.id === sourceId) : undefined;
   if (mode !== 'new' && !source) {
-    return <EmptyState title={t('expense.notFound')} action={back} />;
+    return <SettleEmptyState title={t('expense.notFound')} action={back} />;
   }
   const today = todayIso();
   const mine = active.find(p => p.linkedUserId === me) ?? active[0];

@@ -17,6 +17,8 @@ const fr = {
   app: {
     name: 'Mister Settle',
     tagline: 'Qui a payé, qui doit combien — sans toucher à l’argent.',
+    /** Phrase courte de marque — À propos, OG ; pas un sous-titre de navigation. */
+    promise: 'Calcule. Ne paie jamais.',
   },
   nav: {
     stats: 'Statistiques',
@@ -47,8 +49,6 @@ const fr = {
     unknown: 'Une erreur est survenue : {detail}',
   },
   spaces: {
-    /** Titre de l'accueil tant qu'on n'est pas connecté : il n'y a pas encore d'espaces à soi. */
-    publicTitle: 'Mister Settle',
     pitch:
       'Partagez les dépenses entre proches : qui a payé, qui doit combien, et les remboursements qui soldent tout. Sans paiement, sur invitation.',
     signInTitle: 'Connectez-vous pour retrouver vos espaces.',
@@ -709,6 +709,7 @@ const en: typeof fr = {
   app: {
     name: 'Mister Settle',
     tagline: 'Who paid, who owes what — without touching the money.',
+    promise: 'It calculates. It never pays.',
   },
   nav: {
     stats: 'Statistics',
@@ -739,7 +740,6 @@ const en: typeof fr = {
     unknown: 'Something went wrong: {detail}',
   },
   spaces: {
-    publicTitle: 'Mister Settle',
     pitch:
       'Share expenses with the people close to you: who paid, who owes what, and the repayments that settle everything. No payments, invitation only.',
     signInTitle: 'Sign in to find your spaces.',

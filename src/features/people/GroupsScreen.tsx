@@ -3,7 +3,7 @@ import { Archive, ArchiveRestore, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { TextField } from '@mister-guiiug/dev-pwa-config/react/field';
 import { Sheet } from '@mister-guiiug/dev-pwa-config/react/sheet';
@@ -137,7 +137,7 @@ export function GroupsScreen() {
       {!ready ? (
         <SkeletonGroup label={t('people.loading')} lines={3} />
       ) : active.length === 0 ? (
-        <EmptyState
+        <SettleEmptyState
           title={t('groups.empty')}
           description={t('groups.emptyHint')}
         />

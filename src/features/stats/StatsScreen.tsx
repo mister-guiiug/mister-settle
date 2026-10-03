@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { Stat } from '@mister-guiiug/dev-pwa-config/react/stat';
@@ -243,7 +243,7 @@ export function StatsScreen() {
       {error ? <ErrorBanner message={<ErrorMessage error={error} />} /> : null}
 
       {validated.length === 0 ? (
-        <EmptyState title={t('stats.empty')} />
+        <SettleEmptyState title={t('stats.empty')} />
       ) : (
         <>
           <Card>

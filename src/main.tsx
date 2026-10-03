@@ -54,7 +54,9 @@ createRoot(container).render(
           catalogue des palettes de la famille. */}
       <ThemeProvider
         paint={false}
-        themeColor={{ light: '#f7f8fa', dark: '#0f1115' }}
+        /* Aligné sur `pwaSeoPlugin` / Ledger (`--dwc-bg`) : la splash iOS
+           et la barre de statut lisent ces couleurs. */
+        themeColor={{ light: '#f4f6f8', dark: '#0b1f33' }}
       >
         <I18nProvider>
           {/* L'adaptateur est `null` tant qu'aucun backend distant n'est

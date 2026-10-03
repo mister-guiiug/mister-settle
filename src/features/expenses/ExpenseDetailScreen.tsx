@@ -4,7 +4,7 @@ import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { Stat } from '@mister-guiiug/dev-pwa-config/react/stat';
@@ -58,7 +58,7 @@ export function ExpenseDetailScreen() {
   const expense = expenses.find(e => e.id === expenseId);
   if (!expense) {
     return (
-      <EmptyState
+      <SettleEmptyState
         title={t('expense.notFound')}
         action={
           <Link to={listPath} className="no-underline">

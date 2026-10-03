@@ -4,7 +4,7 @@ import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import {
   SelectField,
@@ -60,7 +60,7 @@ export function InvitationsScreen() {
   if (!space) return null;
   if (!isRemote) {
     return (
-      <EmptyState
+      <SettleEmptyState
         title={t('invitations.localTitle')}
         description={t('invitations.localBody')}
       />
@@ -68,7 +68,7 @@ export function InvitationsScreen() {
   }
   const rights = can(space.myRole);
   if (!rights.admin) {
-    return <EmptyState title={t('invitations.adminOnly')} />;
+    return <SettleEmptyState title={t('invitations.adminOnly')} />;
   }
   const unlinked = participants
     .filter(p => !p.archivedAt && !p.linkedUserId)
