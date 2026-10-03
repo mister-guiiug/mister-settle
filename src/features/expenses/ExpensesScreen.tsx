@@ -9,11 +9,10 @@ import {
   SelectField,
   TextField,
 } from '@mister-guiiug/dev-pwa-config/react/field';
-import { SegmentedControl } from '@mister-guiiug/dev-pwa-config/react/segmented-control';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useI18n } from '../../i18n/index.ts';
 import type { Expense } from '../../backend/ports.ts';
-import { localDate } from '../../domain/dates.ts';
+import { localDate, todayIso } from '../../domain/dates.ts';
 import { toDisplayNumber } from '../../domain/money.ts';
 import { byPosition } from '../../domain/people.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
@@ -25,10 +24,27 @@ import { useExpenses, useExpensesOf } from './store.ts';
 type StatusFilter = 'all' | 'draft' | 'validated';
 const soft = { color: 'var(--dwc-text-soft)' } as const;
 
+function yesterdayIso(now: Date = new Date()): string {
+  const d = new Date(now);
+  d.setDate(d.getDate() - 1);
+  return todayIso(d);
+}
+
+function groupByDay(expenses: Expense[]): { day: string; items: Expense[] }[] {
+  const map = new Map<string, Expense[]>();
+  for (const expense of expenses) {
+    const bucket = map.get(expense.spentOn) ?? [];
+    bucket.push(expense);
+    map.set(expense.spentOn, bucket);
+  }
+  return [...map.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([day, items]) => ({ day, items }));
+}
+
 /**
- * LA LISTE DES DÉPENSES : les plus récentes d'abord, les brouillons marqués
- * — visibles, jamais comptés (R11) —, les archivées repliées. Recherche et
- * filtres se combinent, sur l'appareil : la liste est déjà là.
+ * LA LISTE DES DÉPENSES Ledger : chips de statut, montants mono, groupement
+ * par jour. Les brouillons restent visibles, jamais comptés (R11).
  */
 export function ExpensesScreen() {
   const { t, m, fmt } = useI18n();
@@ -62,7 +78,14 @@ export function ExpensesScreen() {
     (!needle ||
       expense.label.toLowerCase().includes(needle) ||
       expense.note.toLowerCase().includes(needle));
-  const live = expenses.filter(e => e.status !== 'archived').filter(matches);
+  const live = expenses
+    .filter(e => e.status !== 'archived')
+    .filter(matches)
+    .slice()
+    .sort(
+      (a, b) =>
+        b.spentOn.localeCompare(a.spentOn) || b.label.localeCompare(a.label)
+    );
   const archived = expenses
     .filter(e => e.status === 'archived')
     .filter(matches);
@@ -71,6 +94,11 @@ export function ExpensesScreen() {
     participants.find(p => p.id === id)?.displayName ?? '?';
   const money = (minor: number) =>
     fmt.currency(toDisplayNumber(minor, space.minorUnit), space.currency);
+  const dayLabel = (iso: string) => {
+    if (iso === todayIso()) return t('expenses.today');
+    if (iso === yesterdayIso()) return t('expenses.yesterday');
+    return fmt.date(localDate(iso));
+  };
 
   const row = (expense: Expense) => {
     const category = categories.find(
@@ -83,11 +111,10 @@ export function ExpensesScreen() {
           aria-label={t('expenses.open', { label: expense.label })}
           className="block no-underline text-inherit"
         >
-          <Card className="flex items-center gap-3">
+          <Card className="flex items-center gap-3 settle-row-dense">
             <div className="min-w-0 flex-1">
               <p className="m-0 truncate font-medium">{expense.label}</p>
               <p className="m-0 truncate text-xs" style={soft}>
-                {fmt.date(localDate(expense.spentOn))} ·{' '}
                 {t('expenses.paidBy', {
                   names: fmt.list(
                     expense.payers.map(p => nameOf(p.participantId))
@@ -97,7 +124,7 @@ export function ExpensesScreen() {
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <span className="font-semibold">{money(expense.amount)}</span>
+              <span className="settle-amount">{money(expense.amount)}</span>
               {expense.status === 'draft' ? (
                 <Badge tone="warning" size="xs">
                   {t('expenses.draft')}
@@ -116,12 +143,6 @@ export function ExpensesScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/*
-        L'AJOUT N'EST PLUS EN TÊTE. Le bouton rond du bas le porte sur cet
-        écran (`SpaceShell`), et l'état vide le redit sous la phrase qui
-        explique qu'il n'y a rien : trois offres pour un geste, c'était deux
-        de trop. Ce qui reste ici, c'est le compte.
-      */}
       <p className="m-0 text-sm" style={soft}>
         {ready
           ? fmt.plural(live.length, m.expenses.count, { count: live.length })
@@ -145,21 +166,23 @@ export function ExpensesScreen() {
             value={query}
             onChange={event => setQuery(event.target.value)}
           />
-          <SegmentedControl
-            value={status}
-            ariaLabel={t('expenses.statusLabel')}
-            fullWidth
-            size="sm"
-            options={(['all', 'draft', 'validated'] as const).map(value => ({
-              value,
-              label: t(`expenses.status.${value}`),
-            }))}
-            onChange={value =>
-              setStatus(
-                value === 'draft' || value === 'validated' ? value : 'all'
-              )
-            }
-          />
+          <div
+            className="settle-chips"
+            role="group"
+            aria-label={t('expenses.statusLabel')}
+          >
+            {(['all', 'draft', 'validated'] as const).map(value => (
+              <button
+                key={value}
+                type="button"
+                className="settle-chip"
+                aria-pressed={status === value}
+                onClick={() => setStatus(value)}
+              >
+                {t(`expenses.status.${value}`)}
+              </button>
+            ))}
+          </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <SelectField
               label={t('expenses.person')}
@@ -218,9 +241,16 @@ export function ExpensesScreen() {
           {t('expenses.noMatch')}
         </p>
       ) : (
-        <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
-          {live.map(row)}
-        </ul>
+        <div>
+          {groupByDay(live).map(({ day, items }) => (
+            <div key={day}>
+              <p className="settle-day">{dayLabel(day)}</p>
+              <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
+                {items.map(row)}
+              </ul>
+            </div>
+          ))}
+        </div>
       )}
 
       {archived.length > 0 ? (

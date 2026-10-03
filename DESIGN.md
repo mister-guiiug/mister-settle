@@ -97,14 +97,14 @@ couleur (pas `--dwc-text` du thème page).
 
 ## Patterns UX (écrans)
 
-Priorité d’implémentation après ce verrouillage tokens :
+Implémentés (branche `design/ledger-screens`) :
 
 1. **Dashboard** — solde perso en héros ; CTA vers remboursements si `|net| > 0` ; bloc « à traiter » (brouillons).
 2. **Dépenses** — groupement par jour, montants mono, chips de filtre.
-3. **Soldes** — barres proportionnelles, tri `|net|`, lien « régler ».
+3. **Soldes** — barres proportionnelles, tri `|net|`, CTA « régler ».
 4. **Remboursements** — suggestion = CTA Déclarer ; disclaimer banque court.
-5. **Accueil** — carte espace avec solde perso + dernière activité ; attention brouillons / invitations.
-6. **Assistant** — stepper + montant toujours visible ; impact soldes au pas 3.
+5. **Accueil** — carte espace avec solde perso + dernière activité ; attention brouillons.
+6. **Assistant** — stepper + montant toujours visible (impact soldes inchangé au pas 3).
 
 Règles métier inchangées (pas de paiement, validation explicite, suggestions
 informatives, personnes sans compte).

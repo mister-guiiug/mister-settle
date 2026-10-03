@@ -73,6 +73,14 @@ const fr = {
       one: '{count} espace',
       other: '{count} espaces',
     },
+    attention: 'Attention',
+    attentionDrafts: {
+      one: '{count} brouillon à reprendre',
+      other: '{count} brouillons à reprendre',
+    },
+    lastActivity: 'Dernière dépense · {date}',
+    noActivity: 'Aucune dépense encore',
+    upToDate: 'À jour',
   },
   // Les noms des icônes proposées pour un espace : ce que le lecteur
   // d'écran annonce, l'émoji restant décoratif.
@@ -130,6 +138,12 @@ const fr = {
     noMe: 'Vous n’êtes rattaché·e à aucune personne de cet espace.',
     total: 'Total des dépenses',
     comingSoon: 'Bientôt',
+    youOwe: 'Vous devez',
+    owedToYou: 'On vous doit',
+    settled: 'À jour',
+    todo: 'À traiter',
+    settleCta: 'Voir les remboursements',
+    openDraft: 'Ouvrir {label}',
   },
   people: {
     title: 'Personnes',
@@ -237,6 +251,8 @@ const fr = {
       other: '{count} dépenses',
     },
     readerHint: 'La lecture seule ne crée pas de dépense.',
+    today: 'Aujourd’hui',
+    yesterday: 'Hier',
   },
   expense: {
     title: 'Dépense',
@@ -291,6 +307,7 @@ const fr = {
       who: 'Qui a payé, pour qui',
       summary: 'Synthèse et validation',
     },
+    amountNow: 'Montant',
     label: 'Libellé',
     labelPlaceholder: 'Restaurant, courses, essence…',
     labelRequired: 'Un libellé est nécessaire.',
@@ -394,9 +411,12 @@ const fr = {
     detail: 'payé {paid} · dû {owed}',
     settled: 'remboursé {sent} · reçu {received}',
     settle: 'Comment s’arranger ?',
+    settlePrimary: 'Régler avec les suggestions',
     groupHint:
       'Somme des soldes des membres, tels qu’ils sont aujourd’hui — une lecture, pas une comptabilité.',
     noGroups: 'Aucun regroupement.',
+    pays: 'paie',
+    receives: 'reçoit',
     members: {
       one: '{count} membre',
       other: '{count} membres',
@@ -405,12 +425,13 @@ const fr = {
   settlements: {
     title: 'Remboursements',
     disclaimer:
-      'L’application ne transfère aucun argent : un remboursement déclaré est une note partagée, rien d’autre.',
+      'Aucun transfert d’argent dans l’app : déclarer, c’est noter. L’argent circule ailleurs.',
     suggested: 'Comment s’arranger ?',
     suggestedHint:
       'Suggestions calculées à partir des soldes — au plus une opération de moins que de personnes. Indicatif.',
     nothing: 'Rien à régler : tout le monde est à zéro.',
     declare: 'Déclarer',
+    declareThis: 'Déclarer ce remboursement',
     declareManual: 'Déclarer un remboursement',
     from: 'Qui rembourse',
     to: 'À qui',
@@ -743,6 +764,14 @@ const en: typeof fr = {
       one: '{count} space',
       other: '{count} spaces',
     },
+    attention: 'Attention',
+    attentionDrafts: {
+      one: '{count} draft to resume',
+      other: '{count} drafts to resume',
+    },
+    lastActivity: 'Last expense · {date}',
+    noActivity: 'No expense yet',
+    upToDate: 'Settled up',
   },
   // Les noms des icônes proposées pour un espace : ce que le lecteur
   // d'écran annonce, l'émoji restant décoratif.
@@ -799,6 +828,12 @@ const en: typeof fr = {
     noMe: 'You are not linked to any person in this space.',
     total: 'Total expenses',
     comingSoon: 'Coming soon',
+    youOwe: 'You owe',
+    owedToYou: 'You are owed',
+    settled: 'Settled up',
+    todo: 'To do',
+    settleCta: 'See settlements',
+    openDraft: 'Open {label}',
   },
   people: {
     title: 'People',
@@ -907,6 +942,8 @@ const en: typeof fr = {
       other: '{count} expenses',
     },
     readerHint: 'Read-only access does not create expenses.',
+    today: 'Today',
+    yesterday: 'Yesterday',
   },
   expense: {
     title: 'Expense',
@@ -961,6 +998,7 @@ const en: typeof fr = {
       who: 'Who paid, for whom',
       summary: 'Summary and validation',
     },
+    amountNow: 'Amount',
     label: 'Label',
     labelPlaceholder: 'Restaurant, groceries, fuel…',
     labelRequired: 'A label is required.',
@@ -1062,9 +1100,12 @@ const en: typeof fr = {
     detail: 'paid {paid} · owed {owed}',
     settled: 'repaid {sent} · received {received}',
     settle: 'How to settle up?',
+    settlePrimary: 'Settle with suggestions',
     groupHint:
       'Sum of the members’ balances, as the group stands today — a reading, not bookkeeping.',
     noGroups: 'No group.',
+    pays: 'pays',
+    receives: 'receives',
     members: {
       one: '{count} member',
       other: '{count} members',
@@ -1073,12 +1114,13 @@ const en: typeof fr = {
   settlements: {
     title: 'Settlements',
     disclaimer:
-      'The app transfers no money: a declared settlement is a shared note, nothing more.',
+      'No money transfer in the app: declaring is noting. Money moves elsewhere.',
     suggested: 'How to settle up?',
     suggestedHint:
       'Suggestions computed from balances — at most one operation fewer than people. Indicative.',
     nothing: 'Nothing to settle: everyone is at zero.',
     declare: 'Declare',
+    declareThis: 'Declare this settlement',
     declareManual: 'Declare a settlement',
     from: 'Who repays',
     to: 'To whom',
