@@ -103,54 +103,73 @@ export function SettlementsScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="m-0 text-xs" style={soft}>
-        {t('settlements.disclaimer')}
-      </p>
+      <p className="settle-disclaimer">{t('settlements.disclaimer')}</p>
 
       {error && !declaring ? (
         <ErrorBanner message={<ErrorMessage error={error} />} />
       ) : null}
 
-      <Card>
+      <section className="flex flex-col gap-2">
         <CardHeader
           title={t('settlements.suggested')}
           subtitle={t('settlements.suggestedHint')}
         />
         {transfers.length === 0 ? (
-          <p className="m-0 text-sm" style={soft}>
-            {t('settlements.nothing')}
-          </p>
+          <Card>
+            <p className="m-0 text-sm" style={soft}>
+              {t('settlements.nothing')}
+            </p>
+          </Card>
         ) : (
-          <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0 text-sm">
+          <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
             {transfers.map(transfer => (
               <li
                 key={`${transfer.fromParticipantId}:${transfer.toParticipantId}`}
-                className="flex flex-wrap items-center gap-2"
               >
-                <span className="min-w-0 flex-1 truncate">
-                  {nameOf(transfer.fromParticipantId)} →{' '}
-                  {nameOf(transfer.toParticipantId)}
-                </span>
-                <span className="font-medium">{money(transfer.amount)}</span>
-                {editable ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    aria-disabled={guard.disabled}
-                    onClick={() => {
-                      if (!guard.allowed) return;
-                      clearError();
-                      setDeclaring(transfer);
-                    }}
-                  >
-                    {t('settlements.declare')}
-                  </Button>
-                ) : null}
+                <Card className="settle-transfer">
+                  <div className="settle-transfer-grid text-sm">
+                    <div>
+                      <p className="m-0 font-semibold truncate">
+                        {nameOf(transfer.fromParticipantId)}
+                      </p>
+                      <p className="m-0 text-xs" style={soft}>
+                        {t('balances.pays')}
+                      </p>
+                    </div>
+                    <span
+                      className="settle-amount-lg"
+                      style={{ fontSize: '1.25rem' }}
+                    >
+                      {money(transfer.amount)}
+                    </span>
+                    <div className="text-right">
+                      <p className="m-0 font-semibold truncate">
+                        {nameOf(transfer.toParticipantId)}
+                      </p>
+                      <p className="m-0 text-xs" style={soft}>
+                        {t('balances.receives')}
+                      </p>
+                    </div>
+                  </div>
+                  {editable ? (
+                    <Button
+                      variant="primary"
+                      aria-disabled={guard.disabled}
+                      onClick={() => {
+                        if (!guard.allowed) return;
+                        clearError();
+                        setDeclaring(transfer);
+                      }}
+                    >
+                      {t('settlements.declareThis')}
+                    </Button>
+                  ) : null}
+                </Card>
               </li>
             ))}
           </ul>
         )}
-      </Card>
+      </section>
 
       {editable ? (
         <div>
@@ -243,7 +262,7 @@ function SettlementRow({
         {nameOf(settlement.toParticipantId)}
         {settlement.note ? ` · ${settlement.note}` : ''}
       </span>
-      <span className={cancelled ? 'line-through' : 'font-medium'}>
+      <span className={`settle-amount ${cancelled ? 'line-through' : ''}`}>
         {money(settlement.amount)}
       </span>
       {cancelled ? (

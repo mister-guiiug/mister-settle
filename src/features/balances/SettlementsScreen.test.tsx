@@ -91,13 +91,18 @@ describe('SettlementsScreen', () => {
     renderAt(`/e/${space.id}/remboursements`);
 
     // La suggestion : Bob rembourse 15 à Alice (R18, glouton déterministe).
-    expect(await screen.findByText('Bob → Alice')).toBeInTheDocument();
+    expect(await screen.findByText('Bob')).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText('paie')).toBeInTheDocument();
+    expect(screen.getByText('reçoit')).toBeInTheDocument();
     expect(screen.getByText(/^15,00/)).toBeInTheDocument();
     expect(
       screen.getByText('Aucun remboursement déclaré.')
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Déclarer' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Déclarer ce remboursement' })
+    );
     expect(
       (screen.getByLabelText('Montant (EUR)') as HTMLInputElement).value
     ).toBe('15.00');
@@ -120,7 +125,9 @@ describe('SettlementsScreen', () => {
       screen.getByRole('button', { name: 'Annuler ce remboursement' })
     );
     expect(await screen.findByText('Annulé')).toBeInTheDocument();
-    expect(await screen.findByText('Bob → Alice')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Déclarer ce remboursement')
+    ).toBeInTheDocument();
     const [cancelled] = await backend.settlements.list(space.id);
     expect(cancelled?.status).toBe('cancelled');
   });
@@ -128,7 +135,7 @@ describe('SettlementsScreen', () => {
   it('refuse un remboursement d’une personne à elle-même', async () => {
     const { space } = await seed();
     renderAt(`/e/${space.id}/remboursements`);
-    await screen.findByText('Bob → Alice');
+    await screen.findByRole('button', { name: 'Déclarer ce remboursement' });
     fireEvent.click(
       screen.getByRole('button', { name: 'Déclarer un remboursement' })
     );

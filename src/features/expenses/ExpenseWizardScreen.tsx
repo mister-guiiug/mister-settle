@@ -42,6 +42,7 @@ import {
   type ExpenseForm,
   type FormContext,
 } from '../../domain/expense-form.ts';
+import { toDisplayNumber } from '../../domain/money.ts';
 import { byPosition } from '../../domain/people.ts';
 import { ErrorMessage } from '../../components/ErrorMessage.tsx';
 import {
@@ -173,7 +174,7 @@ function Wizard({
   expenses: Expense[];
   settlements: Settlement[];
 }) {
-  const { t } = useI18n();
+  const { t, fmt } = useI18n();
   const navigate = useNavigate();
   const toast = useToast();
   const save = useExpenses(state => state.save);
@@ -327,14 +328,35 @@ function Wizard({
     if (isNew) clearDraft(space.id);
   };
 
+  const amountLabel =
+    total === null
+      ? '—'
+      : fmt.currency(toDisplayNumber(total, space.minorUnit), space.currency);
+
   return (
     <div className="flex flex-col gap-4">
+      <div className="settle-wizard-progress" aria-hidden="true">
+        {([1, 2, 3] as const).map(n => (
+          <i key={n} {...(n <= step ? { 'data-on': '' } : {})} />
+        ))}
+      </div>
       <p className="m-0 text-sm" style={soft}>
         {t('wizard.step', {
           n: step,
           name: t(`wizard.steps.${STEP_KEYS[step]}`),
         })}
       </p>
+
+      <div className="settle-wizard-amount">
+        <span className="text-xs" style={soft}>
+          {t('wizard.amountNow')}
+          {' · '}
+          {t(`wizard.steps.${STEP_KEYS[step]}`)}
+        </span>
+        <span className="settle-amount-lg" style={{ fontSize: '1.35rem' }}>
+          {amountLabel}
+        </span>
+      </div>
 
       {/*
         LE PAS GLISSE DU CÔTÉ D'OÙ IL VIENT. La `key` fait renaître l'élément à

@@ -24,11 +24,8 @@ import { useExpenses, useExpensesOf } from '../expenses/store.ts';
 const soft = { color: 'var(--dwc-text-soft)' } as const;
 
 /**
- * LES SOLDES : recalculés à chaque rendu depuis les dépenses VALIDÉES et
- * les remboursements déclarés (R11, R17), jamais lus d'une valeur stockée
- * (ADR 0011). Par personne, ou consolidés par regroupement — une lecture,
- * pas une comptabilité (ADR 0012). Une personne archivée reste là tant que
- * son solde n'est pas nul (R16).
+ * LES SOLDES Ledger : tri par |net|, barres proportionnelles, CTA vers
+ * remboursements. Recalculés à chaque rendu (R11, R17, ADR 0011).
  */
 export function BalancesScreen() {
   const { t, m, fmt } = useI18n();
@@ -58,28 +55,51 @@ export function BalancesScreen() {
     settlements,
   });
   const byId = new Map(lines.map(line => [line.participantId, line]));
-  const visible = ordered.filter(p => {
-    const line = byId.get(p.id);
-    return line !== undefined && (!p.archivedAt || line.net !== 0);
-  });
+  const visible = ordered
+    .filter(p => {
+      const line = byId.get(p.id);
+      return line !== undefined && (!p.archivedAt || line.net !== 0);
+    })
+    .sort((a, b) => {
+      const na = Math.abs(byId.get(a.id)?.net ?? 0);
+      const nb = Math.abs(byId.get(b.id)?.net ?? 0);
+      return nb - na || a.displayName.localeCompare(b.displayName);
+    });
+  const maxAbs = Math.max(
+    1,
+    ...visible.map(p => Math.abs(byId.get(p.id)?.net ?? 0))
+  );
   const groupLines = consolidateByGroup(
     lines,
     groups
       .filter(g => !g.archivedAt)
       .map(g => ({ id: g.id, memberIds: g.memberIds }))
-  );
+  )
+    .slice()
+    .sort((a, b) => Math.abs(b.net) - Math.abs(a.net));
+  const groupMaxAbs = Math.max(1, ...groupLines.map(g => Math.abs(g.net)));
 
   const netBadge = (net: Minor) => (
     <Badge tone={net > 0 ? 'success' : net < 0 ? 'danger' : 'muted'} size="sm">
-      {money(net)}
+      <span className="settle-amount">{money(net)}</span>
     </Badge>
   );
+  const bar = (net: Minor, max: number) => (
+    <div
+      className="settle-bar"
+      data-tone={net > 0 ? 'success' : net < 0 ? 'danger' : undefined}
+      aria-hidden="true"
+    >
+      <i style={{ width: `${(Math.abs(net) / max) * 100}%` }} />
+    </div>
+  );
+
   const personRow = (line: BalanceLine) => {
     const person = ordered.find(p => p.id === line.participantId);
     if (!person) return null;
     return (
       <li key={line.participantId}>
-        <Card className="flex items-center gap-3">
+        <Card className="flex items-center gap-3 settle-row-dense">
           <Avatar
             name={person.displayName}
             initials={person.initials}
@@ -99,6 +119,7 @@ export function BalancesScreen() {
                   })}`
                 : ''}
             </p>
+            {bar(line.net, maxAbs)}
           </div>
           {netBadge(line.net)}
         </Card>
@@ -108,16 +129,17 @@ export function BalancesScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="m-0 text-xs" style={soft}>
-          {t('balances.hint')}
-        </p>
+      <p className="m-0 text-xs" style={soft}>
+        {t('balances.hint')}
+      </p>
+
+      {validated.length > 0 ? (
         <Link to={`/e/${space.id}/remboursements`} className="no-underline">
-          <Button variant="outline" size="sm">
-            {t('balances.settle')}
+          <Button variant="primary" className="w-full">
+            {t('balances.settlePrimary')}
           </Button>
         </Link>
-      </div>
+      ) : null}
 
       {error ? <ErrorBanner message={<ErrorMessage error={error} />} /> : null}
 
@@ -182,6 +204,7 @@ export function BalancesScreen() {
                                 owed: money(group.owed),
                               })}
                             </p>
+                            {bar(group.net, groupMaxAbs)}
                           </div>
                           {netBadge(group.net)}
                         </div>
@@ -203,7 +226,9 @@ export function BalancesScreen() {
                                     p => p.id === member.participantId
                                   )?.displayName ?? '?'}
                                 </span>
-                                <span>{money(member.net)}</span>
+                                <span className="settle-amount">
+                                  {money(member.net)}
+                                </span>
                               </li>
                             ))}
                           </ul>
