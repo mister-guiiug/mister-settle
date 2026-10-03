@@ -21,6 +21,26 @@ confiance (« aucun paiement, aucune banque ») est courte et permanente aux
 endroits où l’utilisateur pourrait se tromper (remboursements, accueil hors
 session).
 
+## Brand mark
+
+Source unique : `public/favicon.svg` (S évidé, pastille teal / vert d’eau sur
+navy Ledger). Servi dans :
+
+- l’onglet (`index.html`)
+- le `leading` de `AppHeader` (`BrandMark` → `/`)
+- les PNG du manifeste (`npm run icons`, bg `11,31,51`)
+
+Pas de signe dollar, pas de pièce, pas de glyphe de devise — la promesse
+« calcule, ne paie jamais » tient jusque dans le logo.
+
+### Prochaines marches identité (backlog)
+
+1. **Wordmark accueil** — sur `/` hors session, titre h1 = logo + « Mister Settle » plutôt que le seul texte.
+2. **États vides** — petite marque en filigrane / illustration S (pas emoji générique).
+3. **À propos** — reprendre le logo en héros court + phrase « Calcule. Ne paie jamais. »
+4. **OG / screenshots** — régénérer `og-image` et captures après peaufinage Ledger.
+5. **Splash PWA** — tuile maskable déjà alignée navy ; vérifier le thème de la splash iOS.
+
 ## Typography
 
 | Rôle                 | Police                               | Notes                                |

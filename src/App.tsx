@@ -51,6 +51,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
 import { isRemote } from './backend/index.ts';
 import { syncStatusOf, useSyncState } from './backend/sync-state.ts';
+import { BrandMark } from './components/BrandMark.tsx';
 import { HomeScreen } from './features/spaces/HomeScreen.tsx';
 import { SpaceShell } from './features/spaces/SpaceShell.tsx';
 import { useSpaces } from './features/spaces/store.ts';
@@ -433,28 +434,15 @@ export function Shell() {
 
       <AppHeader
         title={title}
+        leading={<BrandMark />}
         actions={
           <>
             {/*
-              LE RETOUR À L'ACCUEIL, EN UN GESTE — ET SEULEMENT DANS UN ESPACE.
-              Là, la barre basse ne montre que les onglets de l'espace, et la
-              flèche de l'en-tête ne remonte que d'un cran (le détail vers la
-              liste, la liste vers l'espace) : revenir à « Mes espaces »
-              demandait deux ou trois retours. Ailleurs, la barre porte déjà
-              l'entrée « Espaces » — deux liens du même nom vers la même page,
-              c'est ce que le parcours e2e a refusé, à raison.
+              LE RETOUR À L'ACCUEIL VIT DANS LA MARQUE (`BrandMark` → `/`).
+              Avant, une icône maison dans les actions ne s'affichait QUE
+              dans un espace ; le logo le fait partout, sans doubler l'entrée
+              « Espaces » de la barre basse (refusée par l'e2e).
             */}
-            {spaceId ? (
-              <Link
-                to="/"
-                aria-label={t('nav.home')}
-                title={t('nav.home')}
-                className="flex items-center no-underline"
-                style={{ color: 'currentColor' }}
-              >
-                <Home size={20} aria-hidden="true" />
-              </Link>
-            ) : null}
             {isRemote ? (
               <Link
                 to="/hors-ligne"
