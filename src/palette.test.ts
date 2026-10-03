@@ -68,3 +68,39 @@ describe('index.css - le contour des contrôles', () => {
     }
   });
 });
+
+/**
+ * LE PRIMAIRE PORTE DU TEXTE, DANS LES DEUX SENS.
+ *
+ * Le bouton principal du socle pose `--dwc-primary-contrast` sur un aplat
+ * `--dwc-primary` ; l'onglet actif de la barre basse et la puce sélectionnée
+ * écrivent `--dwc-primary` sur la surface, le fond ou `--dwc-primary-soft`.
+ * Le teal 600 de la direction Ledger ne tenait que 3,74:1 : axe l'a relevé
+ * sur l'accueil le 03/10/2026. Ces couples sont du texte de 13 à 15 px, donc
+ * 4,5:1 (WCAG 1.4.3), dans les deux thèmes.
+ */
+describe('index.css - le primaire, en aplat et en texte', () => {
+  it.each([
+    ['clair', CLAIR],
+    ['sombre', SOMBRE],
+  ] as const)(
+    '%s : 4,5:1 sous son encre et sur chaque fond',
+    (_theme, table) => {
+      const primaire = table.get('--dwc-primary') ?? '';
+      const encre = table.get('--dwc-primary-contrast') ?? '';
+      expect(primaire).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(encre).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(contraste(encre, primaire)).toBeGreaterThanOrEqual(4.5);
+      for (const fond of [
+        '--dwc-surface',
+        '--dwc-bg',
+        '--dwc-surface-2',
+        '--dwc-primary-soft',
+      ]) {
+        const couleur = table.get(fond) ?? '';
+        expect(couleur, fond).toMatch(/^#[0-9a-f]{6}$/i);
+        expect(contraste(primaire, couleur), fond).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  );
+});

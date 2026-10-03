@@ -50,9 +50,11 @@ test.describe('@critical hors ligne', () => {
     await expect(page.getByText('Brouillon', { exact: true })).toBeVisible();
     await context.setOffline(false);
 
+    // `/hors-ligne` est devenu l'écran « Synchronisation » (DESIGN.md, point
+    // 8) ; il explique toujours qu'en local, rien n'attend le réseau.
     await page.goto('/hors-ligne');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Hors ligne'
+      'Synchronisation'
     );
     await expect(
       page.getByText(

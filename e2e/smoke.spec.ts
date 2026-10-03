@@ -35,7 +35,13 @@ test.describe('@critical le cadre', () => {
 
     // La création ouvre l'espace : son nom est le titre.
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(nom);
-    await expect(page.getByText('1 personne')).toBeVisible();
+    // Depuis la refonte Ledger, le tableau de bord compte les personnes dans
+    // une carte de chiffre : le `Stat` du socle, un `<dl>` dont le `<dt>`
+    // porte le libellé et le `<dd>` la valeur.
+    const personnes = page
+      .locator('[data-dwc="stat"]')
+      .filter({ hasText: 'Personnes' });
+    await expect(personnes.getByRole('definition').first()).toHaveText('1');
 
     // Le vrai contrat de la persistance : ce qui est écrit se relit après un
     // démarrage à froid, pas seulement dans l'état vivant du magasin.
