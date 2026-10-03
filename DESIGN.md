@@ -129,6 +129,8 @@ Implémentés (branche `design/ledger-screens`) :
 4. **Remboursements** — suggestion = CTA Déclarer ; disclaimer banque court.
 5. **Accueil** — carte espace avec solde perso + dernière activité ; attention brouillons.
 6. **Assistant** — stepper + montant toujours visible (impact soldes inchangé au pas 3).
+7. **Réglages d’espace** — Configurer (identité + devise lecture + catégories) · Partager (invitations) · Cycle de vie (archiver + supprimer). Pas de raccourci Stats (déjà dans « Plus »).
+8. **Synchronisation** (`/hors-ligne`) — héros statut Ledger ; files actionnables d’abord ; capacités hors réseau en `<details>` ; empty state si file vide.
 
 Règles métier inchangées (pas de paiement, validation explicite, suggestions
 informatives, personnes sans compte).

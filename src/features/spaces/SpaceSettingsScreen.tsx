@@ -16,9 +16,14 @@ import { IconPicker } from '../../components/IconPicker.tsx';
 import { CategoriesCard } from '../expenses/CategoriesCard.tsx';
 
 /**
- * LES RÉGLAGES D'UN ESPACE. Chaque écriture porte la version lue : un
- * `conflict` dit que quelqu'un d'autre est passé, et propose de recharger —
- * jamais d'écrasement silencieux (ADR 0015).
+ * LES RÉGLAGES D'UN ESPACE — trois blocs métier :
+ * Configurer (identité + devise lecture + catégories), Partager (invitations),
+ * Cycle de vie (archiver + supprimer). Pas de raccourci Stats : déjà dans
+ * la bottom-nav « Plus ».
+ *
+ * Chaque écriture porte la version lue : un `conflict` dit que quelqu'un
+ * d'autre est passé, et propose de recharger — jamais d'écrasement silencieux
+ * (ADR 0015).
  *
  * LE FORMULAIRE EST REMONTÉ À CHAQUE VERSION DE L'ESPACE (`key`) : ses champs
  * naissent des valeurs courantes, sans effet qui recopie des props dans un
@@ -53,7 +58,7 @@ function SpaceSettings({ space }: { space: Space }) {
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !rights.admin) return;
     setBusy(true);
     clearError();
     const saved = await update(
@@ -71,6 +76,7 @@ function SpaceSettings({ space }: { space: Space }) {
   };
 
   const toggleArchive = async () => {
+    if (!rights.own) return;
     setBusy(true);
     clearError();
     await archive(space.id, !space.archivedAt, space.version);
@@ -89,7 +95,7 @@ function SpaceSettings({ space }: { space: Space }) {
 
       <Card>
         <CardHeader
-          title={t('spaceSettings.identity')}
+          title={t('spaceSettings.configure')}
           {...(rights.admin ? {} : { subtitle: t('spaceSettings.adminOnly') })}
         />
         <form
@@ -111,6 +117,9 @@ function SpaceSettings({ space }: { space: Space }) {
             disabled={!rights.admin}
             onChange={event => setDescription(event.target.value)}
           />
+          <p className="m-0 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
+            {t('spaceSettings.currency', { currency: space.currency })}
+          </p>
           <IconPicker
             label={t('newSpace.icon')}
             value={icon}
@@ -121,6 +130,7 @@ function SpaceSettings({ space }: { space: Space }) {
           <ColorPicker
             label={t('newSpace.color')}
             value={color}
+            disabled={!rights.admin}
             onChange={setColor}
           />
           <div>
@@ -128,7 +138,7 @@ function SpaceSettings({ space }: { space: Space }) {
               type="submit"
               variant="primary"
               loading={busy}
-              aria-disabled={!rights.admin}
+              disabled={!rights.admin}
             >
               {t('spaceSettings.save')}
             </Button>
@@ -136,10 +146,15 @@ function SpaceSettings({ space }: { space: Space }) {
         </form>
       </Card>
 
+      <CategoriesCard
+        space={space}
+        editable={rights.admin && !space.archivedAt}
+      />
+
       {rights.admin ? (
         <Card>
           <CardHeader
-            title={t('invitations.invite')}
+            title={t('spaceSettings.share')}
             subtitle={t('invitations.inviteHint')}
           />
           <Link to={`/e/${space.id}/invitations`} className="no-underline">
@@ -150,56 +165,41 @@ function SpaceSettings({ space }: { space: Space }) {
 
       <Card>
         <CardHeader
-          title={t('spaceSettings.stats')}
-          subtitle={t('spaceSettings.statsHint')}
-        />
-        <Link to={`/e/${space.id}/statistiques`} className="no-underline">
-          <Button variant="outline">{t('stats.title')}</Button>
-        </Link>
-      </Card>
-
-      <CategoriesCard
-        space={space}
-        editable={rights.admin && !space.archivedAt}
-      />
-
-      <Card>
-        <CardHeader
-          title={
-            space.archivedAt
-              ? t('spaceSettings.unarchive')
-              : t('spaceSettings.archive')
-          }
+          title={t('spaceSettings.lifecycle')}
           subtitle={
             rights.own
               ? t('spaceSettings.archiveBody')
               : t('spaceSettings.ownerOnly')
           }
         />
-        <Button
-          variant="outline"
-          onClick={() => void toggleArchive()}
-          loading={busy}
-          aria-disabled={!rights.own}
-        >
-          {space.archivedAt
-            ? t('spaceSettings.unarchive')
-            : t('spaceSettings.archive')}
-        </Button>
-      </Card>
-
-      <Card>
-        <CardHeader
-          title={t('spaceSettings.danger')}
-          {...(rights.own ? {} : { subtitle: t('spaceSettings.ownerOnly') })}
-        />
-        <Button
-          variant="danger"
-          onClick={() => setConfirming(true)}
-          aria-disabled={!rights.own}
-        >
-          {t('spaceSettings.remove')}
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button
+            variant="outline"
+            onClick={() => void toggleArchive()}
+            loading={busy}
+            disabled={!rights.own}
+          >
+            {space.archivedAt
+              ? t('spaceSettings.unarchive')
+              : t('spaceSettings.archive')}
+          </Button>
+          <hr className="settle-settings-rule m-0" />
+          <div className="flex flex-col gap-2">
+            <p
+              className="m-0 text-sm font-medium"
+              style={{ color: 'var(--dwc-danger)' }}
+            >
+              {t('spaceSettings.danger')}
+            </p>
+            <Button
+              variant="danger"
+              onClick={() => setConfirming(true)}
+              disabled={!rights.own}
+            >
+              {t('spaceSettings.remove')}
+            </Button>
+          </div>
+        </div>
       </Card>
 
       <ConfirmDialog
