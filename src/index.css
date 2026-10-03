@@ -140,6 +140,29 @@ body {
   border-color: color-mix(in srgb, var(--settle-header-fg) 28%, transparent);
 }
 
+/*
+ * MARQUE EN LEADING. Même fichier que le favicon ; le rayon reprend celui
+ * du SVG (14/64) pour que la pastille ne paraisse pas dans un carré.
+ */
+a.settle-brand {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  border-radius: calc(28px * 14 / 64);
+}
+
+a.settle-brand:focus-visible {
+  outline: 2px solid var(--settle-header-fg);
+  outline-offset: 2px;
+}
+
+.settle-brand-mark {
+  display: block;
+  flex: none;
+  border-radius: calc(28px * 14 / 64);
+}
+
 /* Montants et soldes : mono tabular, alignement comptable. */
 .settle-amount {
   font-family: var(--font-mono);

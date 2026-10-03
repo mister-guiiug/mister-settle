@@ -23,7 +23,7 @@
     "type-check": "tsc -b",
     "type-check:7": "pwa-typecheck-7",
     "doctor": "pwa-doctor",
-    "icons": "pwa-icons --source public/favicon.svg --out public/icons --maskable --bg 15,17,21 --sizes 96,144,180,192,256,384,512",
+    "icons": "pwa-icons --source public/favicon.svg --out public/icons --maskable --bg 11,31,51 --sizes 96,144,180,192,256,384,512",
     "prepare": "husky || true",
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
