@@ -37,9 +37,18 @@
 /*
  * DIRECTION LEDGER (DESIGN.md, 28/03/2026) : navy + teal, IBM Plex, montants
  * mono. On repeint les rôles du socle ; on n'invente pas une seconde palette.
+ *
+ * LE TEAL DU PRIMAIRE EST LE 700, PAS LE 600, ET C'EST MESURÉ. `#0d9488`
+ * porte le blanc du bouton principal et sert de TEXTE à l'onglet actif de la
+ * barre basse : 3,74:1 dans les deux sens, sous les 4,5:1 de WCAG 1.4.3. axe
+ * l'a relevé sur l'accueil dès la pose de la direction (03/10/2026, e2e
+ * `a11y.spec.ts`). `#0f766e` donne 5,47 sous le blanc et sur la surface, 5,05
+ * sur le fond, 4,86 sur `--dwc-surface-2`, 4,70 sur `--dwc-primary-soft` (la
+ * puce sélectionnée) : `palette.test.ts` refait ces calculs. C'est aussi la
+ * valeur de `--dwc-success` ; le sens d'un solde reste porté par son signe.
  */
 @theme {
-  --color-primary: #0d9488;
+  --color-primary: #0f766e;
   --color-primary-soft: #d9f3ef;
   --radius-card: 0.75rem;
 }
@@ -56,7 +65,7 @@
   /* Contour contrôles ≥ 3:1 : ~5,5 sur surface, ~5,1 sur fond, ~4,9 sur
      surface-2 (mesuré dans palette.test.ts). */
   --dwc-border-strong: #5a6b7d;
-  --dwc-primary: #0d9488;
+  --dwc-primary: #0f766e;
   --dwc-primary-soft: #d9f3ef;
   --dwc-primary-contrast: #ffffff;
   --dwc-danger: #b42318;

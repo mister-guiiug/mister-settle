@@ -72,7 +72,7 @@ doublon à côté.
 | `--dwc-text-soft`     | `#5a6b7d` | Secondaire                             |
 | `--dwc-border`        | `#d5dde6` | Filets                                 |
 | `--dwc-border-strong` | `#5a6b7d` | Contours contrôles (≥ 3:1 WCAG 1.4.11) |
-| `--dwc-primary`       | `#0d9488` | CTA, nav active, FAB                   |
+| `--dwc-primary`       | `#0f766e` | CTA, nav active, FAB                   |
 | `--dwc-primary-soft`  | `#d9f3ef` | Fonds accent doux                      |
 | `--dwc-danger`        | `#b42318` | Solde négatif, zone sensible           |
 | `--dwc-success`       | `#0f766e` | Solde positif                          |
@@ -95,6 +95,13 @@ doublon à côté.
 | `--dwc-danger`        | `#f2b8b5` |
 | `--dwc-success`       | `#5eead4` |
 | `--dwc-warning`       | `#f0c674` |
+
+Le primaire clair est le teal 700 (`#0f766e`), pas le 600 (`#0d9488`) : le
+600 ne tenait que 3,74:1 sous le blanc du bouton principal et comme texte de
+l’onglet actif, sous les 4,5:1 de WCAG 1.4.3 (relevé par axe le 03/10/2026).
+Le 700 donne 5,47 sur la surface, 5,05 sur le fond, 4,70 sur
+`--dwc-primary-soft`. `src/palette.test.ts` vérifie ces couples dans les deux
+thèmes.
 
 Pas de dégradés violets, pas de glow marketing, pas de fond crème / terracotta
 broadsheet.

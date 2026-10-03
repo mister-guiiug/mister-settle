@@ -557,6 +557,11 @@ export function Shell() {
           // le composant de lien est le seul endroit qui l'ait.
           linkComponent={LienDeMenu}
           hrefProp="to"
+          // LE CHEMIN DU ROUTEUR, PAS CELUI DU NAVIGATEUR. Sans lui, la barre
+          // lit `window.location.pathname` : `/mister-settle/` une fois
+          // déployé, quand les entrées valent `/`. Aucun onglet n'était actif
+          // en production (relevé le 03/10/2026 ; `App.nav.test.tsx`).
+          currentPath={pathname}
           placement="fixed"
         />
       </NavigationDuMenu.Provider>

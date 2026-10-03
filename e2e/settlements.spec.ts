@@ -35,13 +35,25 @@ test.describe('@critical soldes et remboursements', () => {
     await expect(page.getByText(/^15,00/)).toBeVisible();
     await expect(page.getByText(/^-15,00/)).toBeVisible();
 
-    await page.getByRole('link', { name: 'Régler' }).click();
+    // L'appel à l'action de la page, pas l'onglet « Régler » de la barre
+    // basse, qui mène au même endroit depuis la refonte Ledger : le nom seul,
+    // cherché en sous-chaîne, désignait les deux liens.
+    await page
+      .getByRole('link', { name: 'Régler avec les suggestions' })
+      .click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Remboursements'
     );
-    await expect(page.getByText(/ne transfère aucun argent/)).toBeVisible();
-    await expect(page.getByText('Bob → Alice')).toBeVisible();
-    await page.getByRole('button', { name: 'Déclarer', exact: true }).click();
+    await expect(
+      page.getByText(/^Aucun transfert d’argent dans l’app/)
+    ).toBeVisible();
+    // Depuis la refonte Ledger, une suggestion se lit en trois colonnes : qui
+    // paie, combien, qui reçoit ; elle porte son propre bouton.
+    const suggestion = page.getByRole('listitem').filter({ hasText: 'Bob' });
+    await expect(suggestion).toHaveText(/Bob\s*paie\s*15,00.*Alice\s*reçoit/);
+    await suggestion
+      .getByRole('button', { name: 'Déclarer ce remboursement' })
+      .click();
     await page.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(
       page.getByText('Rien à régler : tout le monde est à zéro.')

@@ -152,3 +152,42 @@ describe("le clic sur une entrée de la barre répond avant que l'écran soit l�
     ).toBe(false);
   });
 });
+
+/*
+ * L'ONGLET COURANT, SOUS LE CHEMIN DE GITHUB PAGES.
+ *
+ * `BottomNav` compare les `href` de ses entrées, relatifs au routeur, au chemin
+ * courant. Sans `currentPath`, il lit `window.location.pathname`, qui vaut
+ * `/mister-settle/` une fois déployé là où l'entrée vaut `/` : aucun onglet
+ * n'était actif en production, jamais en développement ni en e2e, servis sous
+ * `/`. Relevé le 03/10/2026 au navigateur, sur le build de production. Le test
+ * place donc jsdom sous la base, comme le navigateur déployé.
+ */
+describe('sous un basename, la barre dit où l’on est', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('marque « Espaces » comme page actuelle sur l’accueil', () => {
+    window.history.replaceState(null, '', '/mister-settle/');
+    render(
+      <I18nProvider>
+        <AuthProvider adapter={authAdapter()}>
+          <ToastProvider>
+            <MemoryRouter
+              basename="/mister-settle"
+              initialEntries={['/mister-settle/']}
+            >
+              <Shell />
+            </MemoryRouter>
+          </ToastProvider>
+        </AuthProvider>
+      </I18nProvider>
+    );
+
+    expect(screen.getByRole('link', { name: /Espaces/ })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+});
