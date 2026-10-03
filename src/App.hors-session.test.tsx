@@ -45,6 +45,10 @@ describe('accueil hors session', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Mister Settle' })
     ).toBeInTheDocument();
+    // Wordmark : le glyphe vit DANS le h1, pas en leading séparé.
+    expect(
+      screen.getByRole('heading', { level: 1 }).querySelector('img')
+    ).toHaveAttribute('src', expect.stringContaining('favicon.svg'));
     expect(
       await screen.findByText(/Partagez les dépenses entre proches/)
     ).toBeInTheDocument();

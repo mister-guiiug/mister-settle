@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SegmentedControl } from '@mister-guiiug/dev-pwa-config/react/segmented-control';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
@@ -144,7 +144,7 @@ export function BalancesScreen() {
       {error ? <ErrorBanner message={<ErrorMessage error={error} />} /> : null}
 
       {validated.length === 0 ? (
-        <EmptyState
+        <SettleEmptyState
           title={t('balances.empty')}
           description={t('balances.emptyHint')}
           action={

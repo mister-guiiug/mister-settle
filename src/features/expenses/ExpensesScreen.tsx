@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import {
   SelectField,
@@ -218,7 +218,7 @@ export function ExpensesScreen() {
       {!ready ? (
         <SkeletonGroup label={t('expenses.loading')} lines={4} />
       ) : expenses.length === 0 ? (
-        <EmptyState
+        <SettleEmptyState
           title={t('expenses.empty')}
           description={t('expenses.emptyHint')}
           {...(editable

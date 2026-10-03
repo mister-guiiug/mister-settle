@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card } from '@mister-guiiug/dev-pwa-config/react/card';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
@@ -87,7 +87,7 @@ export function HomeScreen() {
     return (
       <>
         <p className="m-0 text-base">{t('spaces.pitch')}</p>
-        <EmptyState
+        <SettleEmptyState
           title={t('spaces.signInTitle')}
           description={t('spaces.signInBody')}
           className="mt-8"
@@ -136,7 +136,7 @@ export function HomeScreen() {
       {!ready ? (
         <SkeletonGroup label={t('spaces.loading')} lines={3} className="mt-6" />
       ) : open.length === 0 ? (
-        <EmptyState
+        <SettleEmptyState
           title={t('spaces.empty')}
           description={t('spaces.emptyHint')}
           className="mt-8"

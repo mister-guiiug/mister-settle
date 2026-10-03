@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
-import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useI18n } from '../../i18n/index.ts';
@@ -35,7 +35,7 @@ export function SpaceShell() {
   }
   if (space === undefined) {
     return (
-      <EmptyState
+      <SettleEmptyState
         title={t('space.notFound')}
         action={
           <Link to="/" className="no-underline">
