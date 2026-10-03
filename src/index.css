@@ -117,6 +117,29 @@ body {
   -webkit-backdrop-filter: none;
 }
 
+/*
+ * BADGE SYNC / THÈME SUR L'EN-TÊTE NAVY. Le badge du socle peint
+ * `--dwc-surface-2` + hérite la couleur du parent : en clair, fond pâle +
+ * texte clair Ledger → « Synchronisé » illisible. On le repeint pour le
+ * chrome sombre, sans toucher au badge ailleurs (écran hors-ligne).
+ */
+[data-dwc='app-header'] [data-dwc='sync-status'] {
+  color: var(--settle-header-fg);
+  background: color-mix(in srgb, var(--settle-header-fg) 12%, transparent);
+  border-color: color-mix(in srgb, var(--settle-header-fg) 28%, transparent);
+}
+
+[data-dwc='app-header'] [data-dwc='theme-toggle'] {
+  color: var(--settle-header-fg);
+}
+
+[data-dwc='app-header'] [data-dwc='theme-toggle'][data-theme-state='dark'],
+[data-dwc='app-header'] [data-dwc='theme-toggle'][data-theme-state='light'] {
+  color: var(--settle-header-fg);
+  background: color-mix(in srgb, var(--settle-header-fg) 12%, transparent);
+  border-color: color-mix(in srgb, var(--settle-header-fg) 28%, transparent);
+}
+
 /* Montants et soldes : mono tabular, alignement comptable. */
 .settle-amount {
   font-family: var(--font-mono);
@@ -308,9 +331,10 @@ body {
  * copies de la même valeur seraient trois occasions de diverger ; il n'y en a
  * que deux, et elles sont voisines.
  *
- * L'EMPILEMENT : la barre basse est à 20, la zone de notification à 70. Le
- * bouton se place entre les deux — au-dessus du contenu et de la barre, sous
- * ce qui annonce ou demande quelque chose.
+ * L'EMPILEMENT (socle) : barre basse 20 · bandeau mise à jour 25 ·
+ * en-tête 30 · toasts 70. Le FAB se place ENTRE la barre et le bandeau
+ * (22) : au-dessus de la nav, sous « Mettre à jour » — relevé le
+ * 03/10/2026, un FAB à 30 passait PAR-DESSUS le message de mise à jour.
  *
  * Le contenu de la page réserve sa place en bas (`:has`) : sans cela, le
  * bouton couvrirait la dernière ligne d'une liste, celle qu'on vient
@@ -331,13 +355,26 @@ body {
     4.5rem + var(--spacing-fluid-sm, 0.75rem) +
       max(env(safe-area-inset-bottom), 0px)
   );
-  z-index: 30;
+  z-index: 22;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
   text-decoration: none;
   color: inherit;
+}
+
+/*
+ * QUAND UN BANDEAU DEMANDE UN GESTE, LE FAB S'EFFACE. Même à z-index 22 il
+ * resterait visible à côté / sous le message et ferait concurrence au
+ * « Mettre à jour ». Consentement fixe : le socle masque déjà le bandeau
+ * d'update ; on masque le FAB pour la même raison.
+ */
+:root:has([data-dwc='update-banner']) .settle-fab,
+:root:has([data-dwc='offline-ready']) .settle-fab,
+:root:has([data-dwc='consent-banner'][data-placement='fixed']) .settle-fab {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /*
