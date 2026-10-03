@@ -253,6 +253,48 @@ a.settle-brand:focus-visible {
   color: color-mix(in srgb, var(--settle-header-fg) 72%, transparent);
 }
 
+.settle-hero .settle-hero-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* Filet entre archive et suppression dans les réglages d'espace. */
+.settle-settings-rule {
+  border: 0;
+  border-top: 1px solid var(--dwc-border);
+}
+
+/* Section refus sync : filet danger léger. */
+.settle-sync-dead {
+  border-color: color-mix(in srgb, var(--dwc-danger) 35%, var(--dwc-border));
+}
+
+.settle-sync-reason {
+  display: inline-block;
+  margin: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  background: var(--dwc-surface-2);
+  color: var(--dwc-text-soft);
+}
+
+.settle-sync-capacities {
+  border: 1px solid var(--dwc-border);
+  border-radius: var(--radius-card, 0.75rem);
+  background: var(--dwc-surface);
+  padding: 0.75rem 1rem;
+}
+
+.settle-sync-capacities > summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style-position: outside;
+}
+
 .settle-bar {
   height: 0.35rem;
   margin-top: 0.35rem;

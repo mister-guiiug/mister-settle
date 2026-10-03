@@ -14,6 +14,7 @@ interface ColorPickerProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
 /**
@@ -27,10 +28,15 @@ interface ColorPickerProps {
  * d'un pixel, au coin de la pastille — un trait perdu qui débordait au lieu
  * d'entourer. La règle de `index.css` le porte sur la pastille elle-même.
  */
-export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
+export function ColorPicker({
+  label,
+  value,
+  onChange,
+  disabled = false,
+}: ColorPickerProps) {
   const name = useId();
   return (
-    <fieldset className="m-0 border-0 p-0">
+    <fieldset className="m-0 border-0 p-0" disabled={disabled}>
       <legend className="mb-2 text-sm font-medium">{label}</legend>
       <div className="flex flex-wrap gap-2">
         {['', ...PALETTE].map(color => (
@@ -40,6 +46,8 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
             style={{
               background: color || 'var(--dwc-surface-2)',
               borderColor: value === color ? 'var(--dwc-text)' : 'transparent',
+              opacity: disabled ? 0.55 : undefined,
+              cursor: disabled ? 'not-allowed' : undefined,
             }}
           >
             <input
@@ -48,6 +56,7 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
               value={color}
               checked={value === color}
               onChange={() => onChange(color)}
+              disabled={disabled}
               className="sr-only"
               aria-label={color || '—'}
             />

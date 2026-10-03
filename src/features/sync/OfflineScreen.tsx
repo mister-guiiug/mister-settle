@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { SyncQueueEntry } from '@mister-guiiug/dev-pwa-config/sync-queue';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
+import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
 import { SyncStatusBadge } from '@mister-guiiug/dev-pwa-config/react/sync-status-badge';
 import { useI18n } from '../../i18n/index.ts';
 import { isRemote } from '../../backend/index.ts';
@@ -13,17 +14,19 @@ import {
 } from '../../backend/sync.ts';
 import { syncStatusOf, useSyncState } from '../../backend/sync-state.ts';
 import type { ExpenseForm } from '../../domain/expense-form.ts';
+import { SettleEmptyState } from '../../components/SettleEmptyState.tsx';
 import { writeDraft } from '../expenses/draft-store.ts';
 import { useSpaces } from '../spaces/store.ts';
 
 const soft = { color: 'var(--dwc-text-soft)' } as const;
 
 /**
- * LA PAGE HORS LIGNE (`/hors-ligne`) : ce que l'application fait sans réseau,
- * ce qu'elle garde pour plus tard, et ce que la base a refusé. Une lettre
- * morte s'EXPLIQUE, avec deux issues (ADR 0015) : la rouvrir dans
- * l'assistant — le brouillon local reprend le formulaire tel qu'il était —
- * ou l'abandonner. Sur l'appareil seul, rien n'attend jamais.
+ * LA PAGE SYNCHRONISATION (`/hors-ligne`) : statut Ledger en tête, puis ce
+ * qu'il y a à traiter (refus, file), puis les capacités hors réseau en
+ * repli. Une lettre morte s'EXPLIQUE, avec deux issues (ADR 0015) : la
+ * rouvrir dans l'assistant — le brouillon local reprend le formulaire tel
+ * qu'il était — ou l'abandonner (confirmé). Sur l'appareil seul, rien
+ * n'attend jamais.
  */
 export function OfflineScreen() {
   const { t, fmt } = useI18n();
@@ -35,6 +38,10 @@ export function OfflineScreen() {
   const spaces = useSpaces(state => state.spaces);
   const loadSpaces = useSpaces(state => state.load);
   const [, bump] = useState(0);
+  const [dropTarget, setDropTarget] = useState<{
+    entry: SyncQueueEntry<QueuedExpense>;
+    dead: boolean;
+  } | null>(null);
 
   useEffect(() => {
     void loadSpaces();
@@ -69,9 +76,11 @@ export function OfflineScreen() {
     bump(n => n + 1);
     void navigate(`/e/${entry.payload.spaceId}/depenses/nouvelle`);
   };
-  const drop = (entry: SyncQueueEntry<QueuedExpense>, dead: boolean) => {
-    if (dead) dropDeadLetter(entry.id);
-    else queue?.remove(entry.id);
+  const confirmDrop = () => {
+    if (!dropTarget) return;
+    if (dropTarget.dead) dropDeadLetter(dropTarget.entry.id);
+    else queue?.remove(dropTarget.entry.id);
+    setDropTarget(null);
     bump(n => n + 1);
   };
   const retry = () => {
@@ -80,6 +89,12 @@ export function OfflineScreen() {
     void queue.flush();
     bump(n => n + 1);
   };
+
+  const healthy =
+    isRemote && online && pending === 0 && dead === 0 && entries.length === 0;
+  const showQueues =
+    isRemote && (!online || entries.length > 0 || deadLetters.length > 0);
+  const capacitiesOpen = !online;
 
   const list = (
     items: SyncQueueEntry<QueuedExpense>[],
@@ -90,12 +105,12 @@ export function OfflineScreen() {
         {t('offline.none')}
       </p>
     ) : (
-      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+      <ul className="m-0 flex list-none flex-col gap-3 p-0 text-sm">
         {items.map(entry => (
-          <li key={entry.id} className="flex flex-col gap-1">
-            <span>{line(entry)}</span>
+          <li key={entry.id} className="flex flex-col gap-1.5">
+            <span className="font-medium">{line(entry)}</span>
             {entry.lastError ? (
-              <span className="text-xs" style={soft}>
+              <span className="settle-sync-reason">
                 {t('offline.reason', { error: entry.lastError })}
               </span>
             ) : null}
@@ -107,96 +122,117 @@ export function OfflineScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader
-          title={t('offline.title')}
-          subtitle={t('offline.intro')}
-          action={
-            <SyncStatusBadge
-              status={syncStatusOf({ online, pending, dead })}
-              pending={pending}
-              labels={labels}
-            />
-          }
-        />
+      <section className="settle-hero" aria-label={t('offline.title')}>
+        <div className="settle-hero-row">
+          <div className="min-w-0 flex-1">
+            <p className="m-0 text-xs font-semibold uppercase tracking-wide settle-hero-muted">
+              {online ? t('offline.statusOnline') : t('offline.statusOffline')}
+            </p>
+            <p className="m-0 mt-1 text-sm settle-hero-muted">
+              {t('offline.counts', {
+                pending: String(pending),
+                dead: String(dead),
+              })}
+            </p>
+          </div>
+          <SyncStatusBadge
+            status={syncStatusOf({ online, pending, dead })}
+            pending={pending}
+            labels={labels}
+          />
+        </div>
+        <p className="m-0 text-sm settle-hero-muted">{t('offline.intro')}</p>
         {staleAt ? (
-          <p className="m-0 text-sm" style={soft}>
+          <p className="m-0 text-xs settle-hero-muted">
             {t('sync.staleBanner', { date: fmt.dateTime(staleAt) })}
           </p>
         ) : null}
-      </Card>
-
-      <Card>
-        <CardHeader title={t('offline.works')} />
-        <ul className="m-0 pl-4 text-sm">
-          <li>{t('offline.worksRead')}</li>
-          <li>{t('offline.worksDraft')}</li>
-          <li>{t('offline.worksCreate')}</li>
-        </ul>
-        <p className="m-0 mt-2 text-xs" style={soft}>
-          {t('offline.blocked')}
-        </p>
-      </Card>
+      </section>
 
       {!isRemote ? (
         <Card>
           <p className="m-0 text-sm">{t('offline.localAll')}</p>
         </Card>
-      ) : (
-        <>
-          <Card>
-            <CardHeader title={t('offline.pending')} />
-            {list(entries, entry => (
+      ) : null}
+
+      {healthy ? (
+        <SettleEmptyState
+          title={t('offline.healthy')}
+          description={t('offline.healthyHint')}
+        />
+      ) : null}
+
+      {showQueues && deadLetters.length > 0 ? (
+        <Card className="settle-sync-dead">
+          <CardHeader
+            title={t('offline.dead')}
+            subtitle={t('offline.deadHint')}
+            action={
+              <Button size="sm" variant="outline" onClick={retry}>
+                {t('offline.retry')}
+              </Button>
+            }
+          />
+          {list(deadLetters, entry => (
+            <>
+              <Button size="sm" variant="primary" onClick={() => reopen(entry)}>
+                {t('offline.reopen')}
+              </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => drop(entry, false)}
+                onClick={() => setDropTarget({ entry, dead: true })}
               >
                 {t('offline.drop')}
               </Button>
-            ))}
-          </Card>
-          <Card>
-            <CardHeader
-              title={t('offline.dead')}
-              subtitle={t('offline.deadHint')}
-              {...(deadLetters.length > 0
-                ? {
-                    action: (
-                      <Button size="sm" variant="outline" onClick={retry}>
-                        {t('offline.retry')}
-                      </Button>
-                    ),
-                  }
-                : {})}
-            />
-            {list(deadLetters, entry => (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => reopen(entry)}
-                >
-                  {t('offline.reopen')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => drop(entry, true)}
-                >
-                  {t('offline.drop')}
-                </Button>
-              </>
-            ))}
-          </Card>
-        </>
-      )}
+            </>
+          ))}
+        </Card>
+      ) : null}
+
+      {showQueues && (entries.length > 0 || !online) ? (
+        <Card>
+          <CardHeader title={t('offline.pending')} />
+          {list(entries, entry => (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setDropTarget({ entry, dead: false })}
+            >
+              {t('offline.drop')}
+            </Button>
+          ))}
+        </Card>
+      ) : null}
+
+      {isRemote ? (
+        <details className="settle-sync-capacities" open={capacitiesOpen}>
+          <summary>{t('offline.works')}</summary>
+          <ul className="mt-2 mb-0 pl-4 text-sm">
+            <li>{t('offline.worksRead')}</li>
+            <li>{t('offline.worksDraft')}</li>
+            <li>{t('offline.worksCreate')}</li>
+          </ul>
+          <p className="m-0 mt-2 text-xs" style={soft}>
+            {t('offline.blocked')}
+          </p>
+        </details>
+      ) : null}
 
       <div>
         <Link to="/" className="no-underline">
           <Button variant="ghost">{t('accept.home')}</Button>
         </Link>
       </div>
+
+      <ConfirmDialog
+        open={dropTarget !== null}
+        destructive
+        title={t('offline.dropConfirm')}
+        message={t('offline.dropBody')}
+        onConfirm={confirmDrop}
+        onCancel={() => setDropTarget(null)}
+      />
     </div>
   );
 }
