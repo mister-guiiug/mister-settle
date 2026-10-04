@@ -35,7 +35,8 @@ jobs:
       # telle quelle au script, qui la refuse (« attendu KEY=VALUE ») et fait
       # échouer le déploiement. Cassé de 17:16 à 19:45 le 16/09/2026.
       build-env: |
-        VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
-        VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}
+        VITE_BACKEND=${{ vars.VITE_BACKEND }}
         VITE_POSTHOG_KEY=${{ vars.VITE_POSTHOG_KEY }}
         VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+        VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}
+        VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
