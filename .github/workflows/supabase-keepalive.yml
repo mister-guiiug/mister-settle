@@ -21,7 +21,7 @@ name: Supabase keep-alive
 
 on:
   schedule:
-    - cron: '0 5 */3 * *'
+    - cron: '0 5 * * *' # chaque jour : tous les 3 jours n'a pas empêché la pause (miss-uwh, 13/10/2026)
   workflow_dispatch:
 
 permissions:
@@ -29,8 +29,8 @@ permissions:
 
 jobs:
   ping:
-    # Même garde que les migrations : sans projet, le cron échouerait tous les
-    # trois jours. Un rouge périodique qu'on apprend à ignorer est pire que
+    # Même garde que les migrations : sans projet, le cron échouerait chaque
+    # jour. Un rouge périodique qu'on apprend à ignorer est pire que
     # pas de surveillance du tout.
     if: vars.VITE_SUPABASE_URL != ''
     uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-keepalive.yml@v6
