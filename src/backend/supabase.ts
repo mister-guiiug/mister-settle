@@ -45,10 +45,12 @@ const log = createLogger('supabase');
  * la query, que le routeur ne touche pas (squelette, ADR 0007).
  */
 export const supabase = createSupabaseClientFactory<SupabaseClient>({
-  // L'ENVIRONNEMENT SE DONNE : `import.meta.env` n'est remplacé par Vite que
-  // dans le code de l'application, pas dans le socle. Sans lui, le site
-  // publié disait « configuration manquante » avec les variables pourtant
-  // dans le bundle (relevé du 07/09/2026).
+  // L'ENVIRONNEMENT SE DONNE. Jusqu'au socle 6.28.4, la fabrique lisait `{}`
+  // sans lui : le site publié disait « configuration manquante » avec les
+  // variables pourtant dans le bundle (relevé du 07/09/2026). Le socle lit
+  // désormais l'environnement Vite seul (dev-pwa-config#482) ; le passer reste
+  // utile aux tests : Vitest exécute le socle sans Vite, et `vi.stubEnv` agit
+  // sur ce `import.meta.env`-ci.
   env: import.meta.env,
   auth: { flowType: 'pkce' },
 });
