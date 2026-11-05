@@ -46,6 +46,26 @@ afterEach(() => {
 });
 
 describe('l’identifiant rangé sur l’appareil', () => {
+  it('est celui de CE projet, jamais celui d’une autre app de la même origine', () => {
+    // Toute la famille partage le `localStorage`. La sœur est rangée la
+    // première : c'est elle qu'une lecture par motif rendait.
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://niqcmepnigldvuvivzlv.supabase.co');
+    localStorage.setItem(
+      'sb-uneautreapp-auth-token',
+      JSON.stringify({
+        access_token: 'a',
+        refresh_token: 'r',
+        expires_at: 1,
+        user: { id: 'soeur' },
+      })
+    );
+    expect(identifiantRange()).toBeUndefined();
+
+    ranger(UID);
+    expect(identifiantRange()).toBe(UID);
+    vi.unstubAllEnvs();
+  });
+
   it('est lu dans la session, même périmée', () => {
     ranger(UID);
     expect(identifiantRange()).toBe(UID);
