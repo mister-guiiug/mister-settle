@@ -2,7 +2,6 @@ import { supabaseAuthAdapter } from '@mister-guiiug/dev-pwa-config/auth/supabase
 import { useAuthContext } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { supabase } from '../backend/supabase.ts';
 import { coverage } from '../backend/index.ts';
-import { caseDeSession } from '../backend/caseDeSession.ts';
 
 /**
  * L'ADAPTATEUR, OU RIEN.
@@ -33,13 +32,14 @@ export function authAdapter(): object | null {
   // SAUF LA CASE DE SESSION (`storageKey`), rendue tout de suite : hors ligne,
   // le socle lit la session sans appeler le SDK, et sans ce nom il prendrait
   // la première case `sb-*` du `localStorage` — que toute la famille partage.
+  // La fabrique la connaît avant le SDK (socle 6.31.0).
   cache = supabaseAuthAdapter({
     client: {
       auth: new Proxy(
         {},
         {
           get(_cible, methode) {
-            if (methode === 'storageKey') return caseDeSession();
+            if (methode === 'storageKey') return supabase.storageKey();
             return async (...args: unknown[]) => {
               const client = (await supabase.getClient()) as unknown as {
                 auth: Record<string, (...a: unknown[]) => unknown>;
