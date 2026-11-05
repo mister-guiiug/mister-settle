@@ -14,6 +14,7 @@ vi.mock('../backend/supabase.ts', () => ({
   supabase: {
     // Hors ligne et SDK pas encore là : rien ne doit l'attendre.
     getClient: () => new Promise(() => {}),
+    storageKey: () => 'sb-niqcmepnigldvuvivzlv-auth-token',
   },
 }));
 

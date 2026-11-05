@@ -2,7 +2,7 @@ import {
   navigateurHorsLigne,
   storedSupabaseSession,
 } from '@mister-guiiug/dev-pwa-config/auth/stored-session';
-import { caseDeSession } from './caseDeSession.ts';
+import { supabaseStorageKey } from '@mister-guiiug/dev-pwa-config/supabase-client';
 
 /**
  * QUI SUIS-JE, SANS ATTENDRE LE RÉSEAU POUR LE SAVOIR.
@@ -42,11 +42,16 @@ const TROP_LONG = Symbol('attente dépassée');
  *
  * La session de CE projet : toute la famille partage une origine, donc un
  * `localStorage`, et la première case `sb-*` venue peut être celle d'une
- * autre app. Le SDK n'est pas attendu pour nommer la case (`caseDeSession`).
+ * autre app. Le SDK n'est pas attendu pour nommer la case : c'est le calcul
+ * du socle (6.31.0), celui-là même que la fabrique passe au client — depuis
+ * la même `VITE_SUPABASE_URL`. La fabrique n'est pas importée ici : elle
+ * importe ce module (cycle).
  */
 export function identifiantRange(): string | undefined {
   const session = storedSupabaseSession({
-    auth: { storageKey: caseDeSession() },
+    auth: {
+      storageKey: supabaseStorageKey(import.meta.env.VITE_SUPABASE_URL),
+    },
   }) as { user?: { id?: string } } | null;
   const id = session?.user?.id;
   return typeof id === 'string' && id.length > 0 ? id : undefined;
