@@ -2,6 +2,7 @@ import {
   navigateurHorsLigne,
   storedSupabaseSession,
 } from '@mister-guiiug/dev-pwa-config/auth/stored-session';
+import { caseDeSession } from './caseDeSession.ts';
 
 /**
  * QUI SUIS-JE, SANS ATTENDRE LE RÉSEAU POUR LE SAVOIR.
@@ -36,9 +37,17 @@ const ATTENTE_MS = 5_000;
 /** Marqueur d'attente dépassée, distinct de « pas de session ». */
 const TROP_LONG = Symbol('attente dépassée');
 
-/** L'identifiant lu dans la session rangée sur l'appareil, s'il y en a une. */
+/**
+ * L'identifiant lu dans la session rangée sur l'appareil, s'il y en a une.
+ *
+ * La session de CE projet : toute la famille partage une origine, donc un
+ * `localStorage`, et la première case `sb-*` venue peut être celle d'une
+ * autre app. Le SDK n'est pas attendu pour nommer la case (`caseDeSession`).
+ */
 export function identifiantRange(): string | undefined {
-  const session = storedSupabaseSession() as { user?: { id?: string } } | null;
+  const session = storedSupabaseSession({
+    auth: { storageKey: caseDeSession() },
+  }) as { user?: { id?: string } } | null;
   const id = session?.user?.id;
   return typeof id === 'string' && id.length > 0 ? id : undefined;
 }
