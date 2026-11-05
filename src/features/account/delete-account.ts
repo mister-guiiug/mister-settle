@@ -1,6 +1,7 @@
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { supabase } from '../../backend/supabase.ts';
 import { localDb } from '../../backend/local.ts';
+import { purgeSessionData } from '../../backend/purge.ts';
 
 const log = createLogger('compte');
 
@@ -25,6 +26,11 @@ export function memeAdresse(saisie: string, compte: string): boolean {
  * — des espaces écrits avant qu'un backend ne soit configuré sur cet appareil
  * ne sont pas dans la base ; la session en dernier, en portée locale.
  *
+ * LE MIROIR NE SUFFISAIT PAS : la copie des lectures et la file des créations
+ * survivaient au compte (relevé du 05/11/2026). Elles partent avec lui, sans
+ * seconde confirmation — l'adresse retapée en était une, et une dépense en
+ * attente d'un compte effacé n'a plus nulle part où aller.
+ *
  * Ce que le compte laisse dans ses ESPACES — sa personne, ses dépenses —
  * appartient aux autres membres et reste (H11 de l'analyse) : la fonction
  * `delete_my_account` ne touche que ce qui n'est qu'à lui.
@@ -39,6 +45,7 @@ export async function deleteMyAccount(): Promise<void> {
   }
 
   localDb.clear();
+  await purgeSessionData();
 
   const { error: deconnexion } = await db.auth.signOut({ scope: 'local' });
   if (deconnexion) {

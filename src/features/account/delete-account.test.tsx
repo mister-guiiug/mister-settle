@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createStore } from '@mister-guiiug/dev-pwa-config/storage';
 import { I18nProvider } from '../../i18n/index.ts';
+import { readCache } from '../../backend/index.ts';
+import { BackendError } from '../../backend/ports.ts';
 import { supabase } from '../../backend/supabase.ts';
 import { createLocalBackend, localDb } from '../../backend/local.ts';
+import { createExpenseQueue, unsentExpenses } from '../../backend/sync.ts';
 import { deleteMyAccount, memeAdresse } from './delete-account.ts';
 import { DangerZone } from './DangerZone.tsx';
 
@@ -26,6 +30,31 @@ function clientFactice(erreurRpc?: string) {
   }));
   const signOut = vi.fn(async () => ({ error: null }));
   return { rpc, signOut, client: { rpc, auth: { signOut } } };
+}
+
+/** Une création restée en file : elle n'a plus de compte où partir. */
+function laisseUneDepenseEnFile() {
+  const space = '00000000-0000-4000-8000-000000000001';
+  createExpenseQueue({
+    store: createStore('settle-sync'),
+    isOnline: () => false,
+    save: () => Promise.reject(new BackendError('network', 'coupé')),
+  }).enqueue({
+    input: {
+      id: '00000000-0000-4000-8000-0000000000c1',
+      spaceId: space,
+      label: 'Pain',
+      amount: 300,
+      currency: 'EUR',
+      spentOn: '2026-11-04',
+      splitMethod: 'equal',
+      payers: [],
+      beneficiaries: [],
+    },
+    spaceId: space,
+    label: 'Pain',
+    form: null,
+  });
 }
 
 function avecI18n(children: ReactNode) {
@@ -51,11 +80,18 @@ describe('deleteMyAccount', () => {
       name: 'Écrit avant',
       currency: 'EUR',
     });
+    laisseUneDepenseEnFile();
+    const videLaCopie = vi.spyOn(readCache, 'clear').mockResolvedValue(true);
 
     await deleteMyAccount();
 
     expect(rpc).toHaveBeenCalledWith('delete_my_account');
     expect(localDb.load().spaces).toEqual([]);
+    // La copie des lectures et la file partent avec le compte : elles vivent
+    // sur l'appareil, et le compte suivant les aurait trouvées (05/11/2026).
+    expect(videLaCopie).toHaveBeenCalledTimes(1);
+    expect(unsentExpenses()).toBe(0);
+    videLaCopie.mockRestore();
     // `scope: 'local'` : une déconnexion globale demande au serveur de
     // révoquer les jetons d'un compte qui n'existe plus, échoue, et laisse
     // l'application avec une session qui ne mène nulle part.
@@ -74,11 +110,13 @@ describe('deleteMyAccount', () => {
       name: 'Intact',
       currency: 'EUR',
     });
+    laisseUneDepenseEnFile();
 
     await expect(deleteMyAccount()).rejects.toThrow('permission denied');
 
     expect(signOut).not.toHaveBeenCalled();
     expect(localDb.load().spaces).toHaveLength(1);
+    expect(unsentExpenses()).toBe(1);
     getClient.mockRestore();
   });
 });

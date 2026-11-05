@@ -9,6 +9,13 @@ import { useSyncState } from './sync-state.ts';
 const log = createLogger('backend');
 
 /**
+ * LA CACHE DE LECTURE, UNE SEULE POIGNÉE : celle que remplissent les lectures
+ * est celle que vide la déconnexion (`purge.ts`). La base ne s'ouvre qu'à la
+ * première opération — rien ne s'ouvre en mode local.
+ */
+export const readCache = createIdb('mister-settle-cache');
+
+/**
  * L'ADAPTATEUR SUPABASE ARRIVE À LA DEMANDE. Il pèse — ses lignes, ses
  * schémas, et derrière lui le SDK que la fabrique du socle charge déjà
  * paresseusement. Une application ouverte sans configuration, ou qui tourne
@@ -22,15 +29,11 @@ function createLazySupabaseBackend(): Backend {
     // resservent quand le réseau manque (ADR 0015) ; l'état de synchronisation
     // apprend qu'on lit une copie, et de quand.
     loaded ??= import('./supabase.ts').then(m =>
-      withReadCache(
-        m.createSupabaseBackend(),
-        createIdb('mister-settle-cache'),
-        {
-          onStale: at => useSyncState.getState().markStale(at),
-          onFresh: () => useSyncState.getState().markFresh(),
-          isOnline: () => useSyncState.getState().online,
-        }
-      )
+      withReadCache(m.createSupabaseBackend(), readCache, {
+        onStale: at => useSyncState.getState().markStale(at),
+        onFresh: () => useSyncState.getState().markFresh(),
+        isOnline: () => useSyncState.getState().online,
+      })
     );
     return loaded;
   };
