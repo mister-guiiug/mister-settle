@@ -11,7 +11,10 @@ import {
 } from '@mister-guiiug/dev-pwa-config/react/field';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { useI18n } from '../../i18n/index.ts';
+import { isRemote } from '../../backend/index.ts';
 import type { Expense } from '../../backend/ports.ts';
+import { useSyncState } from '../../backend/sync-state.ts';
+import { queuedExpensesOf } from '../../backend/sync.ts';
 import { localDate, todayIso } from '../../domain/dates.ts';
 import { toDisplayNumber } from '../../domain/money.ts';
 import { byPosition } from '../../domain/people.ts';
@@ -45,6 +48,12 @@ function groupByDay(expenses: Expense[]): { day: string; items: Expense[] }[] {
 /**
  * LA LISTE DES DÉPENSES Ledger : chips de statut, montants mono, groupement
  * par jour. Les brouillons restent visibles, jamais comptés (R11).
+ *
+ * LES CRÉATIONS EN FILE Y SONT AUSSI, à part et marquées « en attente ».
+ * L'assistant ramène ici après avoir mis une dépense en file : jusqu'au
+ * 05/11/2026 elle n'y figurait pas, et rien ne disait qu'elle existait sauf
+ * un toast déjà parti. Elles ne s'ouvrent pas — la base ne les connaît pas
+ * encore — et mènent à l'écran de synchronisation, où on peut les abandonner.
  */
 export function ExpensesScreen() {
   const { t, m, fmt } = useI18n();
@@ -57,6 +66,8 @@ export function ExpensesScreen() {
   const categories = useExpenses(state => state.categories);
   const ready = useExpenses(state => state.ready);
   const error = useExpenses(state => state.error);
+  // Lu pour RE-RENDRE quand la file bouge : la liste vient de la file.
+  useSyncState(state => state.pending);
   const [status, setStatus] = useState<StatusFilter>('all');
   const [personId, setPersonId] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -89,6 +100,7 @@ export function ExpensesScreen() {
   const archived = expenses
     .filter(e => e.status === 'archived')
     .filter(matches);
+  const queued = isRemote ? queuedExpensesOf(space.id) : [];
   const filtering = status !== 'all' || personId || categoryId || needle;
   const nameOf = (id: string) =>
     participants.find(p => p.id === id)?.displayName ?? '?';
@@ -157,6 +169,45 @@ export function ExpensesScreen() {
 
       {error ? <ErrorBanner message={<ErrorMessage error={error} />} /> : null}
 
+      {queued.length > 0 ? (
+        <section aria-label={t('expenses.queuedTitle')}>
+          <p className="settle-day">{t('expenses.queuedTitle')}</p>
+          <ul className="settle-liste m-0 flex list-none flex-col gap-2 p-0">
+            {queued.map(({ id, payload: { input } }) => (
+              <li key={id}>
+                <Link
+                  to="/hors-ligne"
+                  aria-label={t('expenses.queuedOpen', { label: input.label })}
+                  className="block no-underline text-inherit"
+                >
+                  <Card className="flex items-center gap-3 settle-row-dense">
+                    <div className="min-w-0 flex-1">
+                      <p className="m-0 truncate font-medium">{input.label}</p>
+                      <p className="m-0 truncate text-xs" style={soft}>
+                        {t('expenses.paidBy', {
+                          names: fmt.list(
+                            input.payers.map(p => nameOf(p.participantId))
+                          ),
+                        })}
+                        {` · ${dayLabel(input.spentOn)}`}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <span className="settle-amount">
+                        {money(input.amount)}
+                      </span>
+                      <Badge tone="info" size="xs">
+                        {t('expenses.queued')}
+                      </Badge>
+                    </div>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {ready && expenses.length > 0 ? (
         <Card className="flex flex-col gap-3">
           <TextField
@@ -217,7 +268,7 @@ export function ExpensesScreen() {
 
       {!ready ? (
         <SkeletonGroup label={t('expenses.loading')} lines={4} />
-      ) : expenses.length === 0 ? (
+      ) : expenses.length === 0 && queued.length === 0 ? (
         <SettleEmptyState
           title={t('expenses.empty')}
           description={t('expenses.emptyHint')}

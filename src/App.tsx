@@ -250,6 +250,16 @@ export function Shell() {
   useEffect(() => {
     setOnline(online);
   }, [online, setOnline]);
+  // LA FILE DES CRÉATIONS DÉMARRE ICI, au lancement — pas au premier écran
+  // qui la demande : les dépenses d'avant un redémarrage repartent, et la
+  // pastille compte ce qui attend dès l'ouverture (`sync.ts`). Importée à la
+  // demande : le mode local n'a pas de file, et le chunk principal a son
+  // budget. Le morceau est précaché — il se charge aussi hors ligne.
+  const session = authReady && signedIn;
+  useEffect(() => {
+    if (!isRemote) return;
+    void import('./backend/sync.ts').then(m => m.bootExpenseQueue(session));
+  }, [session]);
   // `end: false` PLUTÔT QU'UN JOKER DE FIN DE CHEMIN : le docteur du socle lit
   // le source sans ses commentaires, et une barre suivie d'une étoile dans une
   // chaîne ouvre pour lui un commentaire bloc — qui avale les routes jusqu'au

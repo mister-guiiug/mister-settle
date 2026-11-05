@@ -253,6 +253,9 @@ const fr = {
     readerHint: 'La lecture seule ne crée pas de dépense.',
     today: 'Aujourd’hui',
     yesterday: 'Hier',
+    queuedTitle: 'En attente d’envoi',
+    queued: 'En attente',
+    queuedOpen: '{label}, en attente d’envoi : voir la synchronisation',
   },
   expense: {
     title: 'Dépense',
@@ -953,6 +956,9 @@ const en: typeof fr = {
     readerHint: 'Read-only access does not create expenses.',
     today: 'Today',
     yesterday: 'Yesterday',
+    queuedTitle: 'Waiting to be sent',
+    queued: 'Pending',
+    queuedOpen: '{label}, waiting to be sent: open sync',
   },
   expense: {
     title: 'Expense',
