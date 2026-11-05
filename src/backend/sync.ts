@@ -31,6 +31,9 @@ export function shouldRetry(error: unknown): boolean {
   return isBackendError(error) && error.code === 'network';
 }
 
+const QUEUE_KEY = 'expense-queue';
+const DEAD_KEY = 'expense-dead';
+
 export function createExpenseQueue(options: {
   save: (input: ExpenseInput) => Promise<SaveResult>;
   store: Store;
@@ -40,8 +43,8 @@ export function createExpenseQueue(options: {
 }): SyncQueue<QueuedExpense> {
   return createSyncQueue<QueuedExpense>({
     store: options.store,
-    queueKey: 'expense-queue',
-    deadKey: 'expense-dead',
+    queueKey: QUEUE_KEY,
+    deadKey: DEAD_KEY,
     keyOf: payload => payload.input.id,
     shouldRetry: error => shouldRetry(error),
     maxAttempts: 8,
@@ -56,26 +59,93 @@ export function createExpenseQueue(options: {
 }
 
 let singleton: SyncQueue<QueuedExpense> | null = null;
-const DEAD_KEY = 'expense-dead';
+let started = false;
 let appStore: Store | null = null;
 const storeOf = () => (appStore ??= createStore('settle-sync'));
 
-/** La file de l'application, démarrée à la première demande. */
-export function expenseQueue(): SyncQueue<QueuedExpense> {
+/**
+ * La file, créée à la première demande, et son état PUBLIÉ aussitôt — sans
+ * rien envoyer : lire ce qui attend ne demande ni réseau ni session.
+ */
+function queueOf(): SyncQueue<QueuedExpense> {
   if (singleton) return singleton;
-  const state = useSyncState.getState();
   singleton = createExpenseQueue({
     save: input => backend.expenses.save(input, null),
     store: storeOf(),
     onChange: status => useSyncState.getState().setQueue(status),
     onDone: () => useSyncState.getState().noteDone(),
   });
-  state.setQueue({
+  useSyncState.getState().setQueue({
     pending: singleton.pending(),
     dead: singleton.deadLetters().length,
   });
-  void singleton.start();
   return singleton;
+}
+
+/** La file de l'application, démarrée à la première demande. */
+export function expenseQueue(): SyncQueue<QueuedExpense> {
+  const queue = queueOf();
+  if (!started) {
+    started = true;
+    void queue.start();
+  }
+  return queue;
+}
+
+/**
+ * LA FILE DÉMARRE AU LANCEMENT, pas au premier écran qui la demande.
+ *
+ * Elle n'était créée qu'au premier `expenseQueue()` — l'assistant, l'écran
+ * de synchronisation. Relevé le 05/11/2026 : après un redémarrage, rien
+ * n'était rejoué, et la pastille disait « synchronisé » (0 en attente) au-
+ * dessus de dépenses qui n'étaient jamais parties.
+ *
+ * L'ÉTAT EST PUBLIÉ TOUT DE SUITE, L'ENVOI ATTEND LA SESSION. Sans elle, la
+ * base refuse (RLS) et la file rangerait en lettres mortes des dépenses qui
+ * n'avaient qu'à attendre la reconnexion.
+ */
+export function bootExpenseQueue(session: boolean): void {
+  if (session) expenseQueue();
+  else queueOf();
+}
+
+/**
+ * Les créations en attente d'un espace : la liste des dépenses les montre.
+ * Appelée PENDANT un rendu, elle ne crée pas la file — ce qui publierait son
+ * état, donc mettrait à jour un autre composant en plein rendu : sans file
+ * encore, elle lit le stockage, que la file relit de toute façon.
+ */
+export function queuedExpensesOf(
+  spaceId: string
+): SyncQueueEntry<QueuedExpense>[] {
+  const entries = singleton
+    ? singleton.list()
+    : storeOf().get<SyncQueueEntry<QueuedExpense>[]>(QUEUE_KEY, []);
+  return (Array.isArray(entries) ? entries : []).filter(
+    entry => entry?.payload?.spaceId === spaceId
+  );
+}
+
+/**
+ * Ce qu'une purge jetterait : les créations en attente ET les refusées, qui
+ * restent rejouables tant qu'on ne les abandonne pas.
+ */
+export function unsentExpenses(): number {
+  const queue = queueOf();
+  return queue.pending() + queue.deadLetters().length;
+}
+
+/**
+ * VIDER LA FILE — déconnexion, suppression du compte. Elle vit sur
+ * l'APPAREIL, pas dans la session : laissée là, elle repartirait sous la
+ * session du compte suivant, avec ses droits. Arrêtée aussi, pour qu'une
+ * session suivante la redémarre (et réécoute le retour du réseau).
+ */
+export function clearExpenseQueue(): void {
+  const queue = queueOf();
+  queue.stop();
+  queue.clear();
+  started = false;
 }
 
 /**

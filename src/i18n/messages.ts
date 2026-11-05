@@ -253,6 +253,9 @@ const fr = {
     readerHint: 'La lecture seule ne crée pas de dépense.',
     today: 'Aujourd’hui',
     yesterday: 'Hier',
+    queuedTitle: 'En attente d’envoi',
+    queued: 'En attente',
+    queuedOpen: '{label}, en attente d’envoi : voir la synchronisation',
   },
   expense: {
     title: 'Dépense',
@@ -687,6 +690,13 @@ const fr = {
     localModeBody:
       "Aucun backend n'est configuré : tout reste sur cet appareil. L'écran est là quand même — un écran masqué par une condition finit par diverger de celui qui s'affiche.",
     signOut: 'Se déconnecter',
+    signOutPendingTitle: 'Des dépenses ne sont pas parties',
+    signOutPending: {
+      one: '{count} dépense n’est pas encore partie à la base. Elle vit sur CET appareil, pas dans votre compte : se déconnecter la supprime définitivement. Reconnectez-vous au réseau pour l’envoyer d’abord.',
+      other:
+        '{count} dépenses ne sont pas encore parties à la base. Elles vivent sur CET appareil, pas dans votre compte : se déconnecter les supprime définitivement. Reconnectez-vous au réseau pour les envoyer d’abord.',
+    },
+    signOutAnyway: 'Se déconnecter et les perdre',
     admin: 'Administration',
     linkIntro:
       'Un lien à usage unique arrive dans votre boîte : aucun mot de passe à retenir, ni à voler.',
@@ -953,6 +963,9 @@ const en: typeof fr = {
     readerHint: 'Read-only access does not create expenses.',
     today: 'Today',
     yesterday: 'Yesterday',
+    queuedTitle: 'Waiting to be sent',
+    queued: 'Pending',
+    queuedOpen: '{label}, waiting to be sent: open sync',
   },
   expense: {
     title: 'Expense',
@@ -1384,6 +1397,13 @@ const en: typeof fr = {
     localModeBody:
       'No backend is configured: everything stays on this device. The screen is still here — a screen hidden behind a condition drifts away from the one that shows.',
     signOut: 'Sign out',
+    signOutPendingTitle: 'Some expenses were not sent',
+    signOutPending: {
+      one: '{count} expense has not reached the server yet. It lives on THIS device, not in your account: signing out deletes it for good. Reconnect to send it first.',
+      other:
+        '{count} expenses have not reached the server yet. They live on THIS device, not in your account: signing out deletes them for good. Reconnect to send them first.',
+    },
+    signOutAnyway: 'Sign out and lose them',
     admin: 'Admin',
     linkIntro:
       'A one-time link lands in your inbox: no password to remember, none to steal.',

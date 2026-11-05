@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { Badge } from '@mister-guiiug/dev-pwa-config/react/badge';
+import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
 import { LoginForm } from '@mister-guiiug/dev-pwa-config/react/login-form';
 import { useAuthContext } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { useI18n } from '../../i18n/index.ts';
 import { useRole } from '../../auth/index.ts';
 import { coverage } from '../../backend/index.ts';
+import { purgeSessionData } from '../../backend/purge.ts';
+import { unsentExpenses } from '../../backend/sync.ts';
 import { DangerZone } from './DangerZone.tsx';
 
 /**
@@ -31,7 +34,7 @@ import { DangerZone } from './DangerZone.tsx';
 type Mode = 'link' | 'password';
 
 export function AccountScreen() {
-  const { t } = useI18n();
+  const { t, m, fmt } = useI18n();
   const { signedIn, user, signIn, signInWithOtp, signOut, ready } =
     useAuthContext<unknown, { email?: string }>();
   const { admin } = useRole();
@@ -39,6 +42,9 @@ export function AccountScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // Le nombre de dépenses qu'une déconnexion jetterait : la boîte s'ouvre
+  // quand il n'est pas nul.
+  const [toLose, setToLose] = useState<number | null>(null);
 
   if (coverage.kind !== 'supabase') {
     return (
@@ -54,6 +60,26 @@ export function AccountScreen() {
 
   if (!ready) return null;
 
+  /*
+   * LA DÉCONNEXION PURGE CE QUE L'APPAREIL GARDE POUR LA SESSION — la copie
+   * des lectures, la file des créations (`purge.ts`) — et DEMANDE AVANT de
+   * jeter ce qui n'est pas parti. Ces dépenses, l'utilisateur les croit
+   * enregistrées ; les perdre en silence était le défaut relevé dans deux
+   * apps du parc le 05/11/2026. Le geste et ses mots sont ceux de mister-doc.
+   * Une file vide ne demande rien : une confirmation sans enjeu apprend à
+   * cliquer « OK » sans lire.
+   */
+  const leave = async () => {
+    setToLose(null);
+    await purgeSessionData();
+    await signOut();
+  };
+  const askToLeave = () => {
+    const unsent = unsentExpenses();
+    if (unsent > 0) setToLose(unsent);
+    else void leave();
+  };
+
   if (signedIn) {
     return (
       <>
@@ -65,10 +91,22 @@ export function AccountScreen() {
               admin ? <Badge tone="info">{t('account.admin')}</Badge> : null
             }
           />
-          <Button variant="outline" onClick={() => void signOut()}>
+          <Button variant="outline" onClick={askToLeave}>
             {t('account.signOut')}
           </Button>
         </Card>
+
+        <ConfirmDialog
+          open={toLose !== null}
+          destructive
+          title={t('account.signOutPendingTitle')}
+          message={fmt.plural(toLose ?? 0, m.account.signOutPending, {
+            count: toLose ?? 0,
+          })}
+          confirmLabel={t('account.signOutAnyway')}
+          onConfirm={() => void leave()}
+          onCancel={() => setToLose(null)}
+        />
 
         {/* LE DROIT À L'EFFACEMENT EST ICI, PAS DANS UN COURRIEL. Il n'est
             rendu que connecté et en mode distant — les deux conditions sont
