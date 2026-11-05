@@ -60,6 +60,39 @@ export default defineConfig(({ command }) => {
     // « mister-settle ». Le catalogue connaît pourtant le vrai nom — c'est
     // une amélioration à porter au socle, pas ici.
     name: 'Mister Settle',
+    /*
+     * LES POLICES GOOGLE, MISES EN CACHE À LA PREMIÈRE VISITE. `index.html`
+     * charge IBM Plex depuis Google Fonts ; sans règle, rien ne les gardait,
+     * et l'application retombait hors ligne sur les polices système (audit
+     * hors-ligne du 05/11/2026). Les deux hôtes se traitent différemment :
+     *
+     *   - la FEUILLE (`fonts.googleapis.com`) change quand Google la révise :
+     *     servie du cache, puis rafraîchie derrière ;
+     *   - les FICHIERS (`fonts.gstatic.com`) ont une URL par version, et ne
+     *     changent jamais sous la même : le cache d'abord, un an. `0` admet la
+     *     réponse opaque d'une requête sans CORS — sans lui, `CacheFirst` ne
+     *     garde rien de ce qui en est une.
+     *
+     * Ajoutées APRÈS la règle d'images du socle, qu'elles ne remplacent pas.
+     * La CSP n'est pas en cause : le worker sert ce que la page a déjà le
+     * droit de demander.
+     */
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+        handler: 'StaleWhileRevalidate',
+        options: { cacheName: 'google-fonts-stylesheets' },
+      },
+      {
+        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'google-fonts-webfonts',
+          expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+    ],
   });
 
   return {
@@ -76,8 +109,8 @@ export default defineConfig(({ command }) => {
        * NOMMER N'EST PAS PRÉCHARGER, et il faut les deux options pour les
        * séparer.
        *
-       * `manualChunks` donne au morceau Sentry un NOM stable — sans règle,
-       * Rollup le nomme d'après le module (`esm-*`), instable d'une version à
+       * `chunkFileNames` donne au morceau Sentry un NOM stable — sans règle,
+       * Rolldown le nomme d'après le module (`esm-*`), instable d'une version à
        * l'autre et partagé avec d'autres paquets : le `globIgnores` du service
        * worker n'aurait pas de cible fiable.
        *
@@ -110,20 +143,38 @@ export default defineConfig(({ command }) => {
        * fichier ne porte plus. Ils acceptent désormais les deux formes, pour
        * qu'un retour de l'empreinte ne les rende pas muets en silence.
        * `pwa-doctor` contrôle l'invariant depuis le socle (`chunk-hors-precache`).
+       *
+       * ON NOMME LE MORCEAU, ON NE LE COMPOSE PLUS — et c'est ce qui rend
+       * l'application au hors-ligne. Jusqu'au 05/11/2026, le nom venait d'un
+       * `manualChunks`, que Rolldown traduit en groupe de `codeSplitting` AVEC
+       * les dépendances de ce qu'il capture, récursivement (son défaut, que
+       * Rollup n'avait pas). `@sentry/react` importe `react` : React entrait
+       * dans `sentry.js` (450 Ko, `react.transitional.element`), et l'entrée
+       * commençait par `import … from "./sentry.js"` — un morceau que
+       * `globIgnores` sort du précache. Hors ligne, il manquait, et React ne
+       * montait plus : relevé en production par l'audit hors-ligne du parc,
+       * rejoué par `e2e/offline.spec.ts`.
+       *
+       * Sans groupe, le découpage automatique fait exactement ce qu'il faut :
+       * le morceau de l'`import()` d'`initSentry` ne reçoit que ce que SEUL
+       * Sentry atteint (`@sentry/*`, `web-vitals`) ; ce que l'entrée partage
+       * avec lui — React — reste du côté de l'entrée, précaché. On ne fait que
+       * reconnaître ce morceau à sa façade, `@sentry/react`, pour lui donner
+       * son nom stable. Un groupe sans récursion
+       * (`includeDependenciesRecursively: false`) a été essayé : il laissait
+       * `web-vitals` dans une façade à part, en cycle avec `sentry.js`.
        */
       modulePreload: {
         resolveDependencies: (_fichier: string, deps: string[]) =>
           deps.filter(d => !/(^|\/)sentry(-[\w-]+)?\.js$/.test(d)),
       },
-      rollupOptions: {
+      rolldownOptions: {
         output: {
-          manualChunks(id: string) {
-            return id.replace(/\\/g, '/').includes('/@sentry/')
-              ? 'sentry'
-              : undefined;
-          },
           chunkFileNames: chunk =>
-            chunk.name === 'sentry'
+            chunk.isDynamicEntry &&
+            /[\\/]node_modules[\\/]@sentry[\\/]react[\\/]/.test(
+              chunk.facadeModuleId ?? ''
+            )
               ? 'assets/sentry.js'
               : 'assets/[name]-[hash].js',
         },
