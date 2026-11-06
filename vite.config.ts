@@ -3,7 +3,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { pwaBaseOptions } from '@mister-guiiug/dev-pwa-config/vite-pwa';
+import {
+  pwaBaseOptions,
+  SENTRY_CHUNK_FILE,
+  withoutSentryPreload,
+} from '@mister-guiiug/dev-pwa-config/vite-pwa';
 import {
   pwaSeoPlugin,
   spaFallbackPlugin,
@@ -60,39 +64,7 @@ export default defineConfig(({ command }) => {
     // « mister-settle ». Le catalogue connaît pourtant le vrai nom — c'est
     // une amélioration à porter au socle, pas ici.
     name: 'Mister Settle',
-    /*
-     * LES POLICES GOOGLE, MISES EN CACHE À LA PREMIÈRE VISITE. `index.html`
-     * charge IBM Plex depuis Google Fonts ; sans règle, rien ne les gardait,
-     * et l'application retombait hors ligne sur les polices système (audit
-     * hors-ligne du 05/11/2026). Les deux hôtes se traitent différemment :
-     *
-     *   - la FEUILLE (`fonts.googleapis.com`) change quand Google la révise :
-     *     servie du cache, puis rafraîchie derrière ;
-     *   - les FICHIERS (`fonts.gstatic.com`) ont une URL par version, et ne
-     *     changent jamais sous la même : le cache d'abord, un an. `0` admet la
-     *     réponse opaque d'une requête sans CORS — sans lui, `CacheFirst` ne
-     *     garde rien de ce qui en est une.
-     *
-     * Ajoutées APRÈS la règle d'images du socle, qu'elles ne remplacent pas.
-     * La CSP n'est pas en cause : le worker sert ce que la page a déjà le
-     * droit de demander.
-     */
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-        handler: 'StaleWhileRevalidate',
-        options: { cacheName: 'google-fonts-stylesheets' },
-      },
-      {
-        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'google-fonts-webfonts',
-          expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
-    ],
+    // Les polices Google : mises en cache par pwaWorkbox (socle 6.32.0).
   });
 
   return {
@@ -165,8 +137,7 @@ export default defineConfig(({ command }) => {
        * `web-vitals` dans une façade à part, en cycle avec `sentry.js`.
        */
       modulePreload: {
-        resolveDependencies: (_fichier: string, deps: string[]) =>
-          deps.filter(d => !/(^|\/)sentry(-[\w-]+)?\.js$/.test(d)),
+        resolveDependencies: withoutSentryPreload,
       },
       rolldownOptions: {
         output: {
@@ -175,7 +146,7 @@ export default defineConfig(({ command }) => {
             /[\\/]node_modules[\\/]@sentry[\\/]react[\\/]/.test(
               chunk.facadeModuleId ?? ''
             )
-              ? 'assets/sentry.js'
+              ? SENTRY_CHUNK_FILE
               : 'assets/[name]-[hash].js',
         },
       },
@@ -222,8 +193,8 @@ export default defineConfig(({ command }) => {
         // l'accord serait refusée par la politique — et l'échec ne se verrait
         // qu'en console, sur le site déployé, une fois le consentement donné.
         analytics: true,
-        connectSrc: ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+        connectSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'blob:'],
         // IBM Plex (Ledger) : feuilles Google Fonts + fichiers gstatic.
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
@@ -243,32 +214,8 @@ export default defineConfig(({ command }) => {
       //     `wide.png`), dimensions comprises. Elles décident de l'interface
       //     d'installation — une fiche au lieu d'une ligne et un bouton — et
       //     `npm run screenshots` les régénère depuis un build.
-      VitePWA({
-        ...pwa,
-        /*
-         * LE MORCEAU SENTRY HORS DU PRÉCACHE, sans quoi tout le découpage
-         * ci-dessus ne servirait à rien : Workbox ramasse TOUT le JS émis,
-         * `import()` ou pas. Mesuré le 16/09/2026 sur la production de deux
-         * apps du parc, 345 et 463 KiB de SDK téléchargés par chaque visiteur,
-         * sans qu'aucun DSN soit posé.
-         *
-         * AJOUTÉ aux exclusions du socle (`version.json`, `node_modules`), pas
-         * à leur place : `workbox` s'étale À PLAT, une liste de l'app
-         * remplacerait la sienne.
-         */
-        // Le motif accepte les DEUX formes de nom : le fichier s'appelle
-        // désormais `sentry.js`, sans empreinte (cf. `chunkFileNames`), et
-        // `sentry-*` reste accepté pour qu'un retour de l'empreinte ne fasse pas
-        // entrer 158 kB de SDK dans le précache sans que rien ne le signale.
-        workbox: {
-          ...pwa.workbox,
-          globIgnores: [
-            ...(pwa.workbox.globIgnores as string[]),
-            '**/sentry.js',
-            '**/sentry-*.js',
-          ],
-        },
-      }),
+      // Le morceau Sentry est hors du précache par pwaWorkbox (socle 6.32.0).
+      VitePWA(pwa),
 
       ...(analyze
         ? [
