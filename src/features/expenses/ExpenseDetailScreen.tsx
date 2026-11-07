@@ -134,13 +134,16 @@ export function ExpenseDetailScreen() {
           }${subcategory ? ` › ${subcategory.name}` : ''}`}
           action={<StatusBadge expense={expense} />}
         />
-        <dl className="m-0 grid grid-cols-2 gap-3">
+        {/* Un <div>, pas un <dl> : chaque `Stat` est déjà sa propre liste de
+            définitions, et un <dl> dans un <dl> est invalide (axe,
+            « definition-list »). */}
+        <div className="m-0 grid grid-cols-2 gap-3">
           <Stat label={t('expense.amount')} value={money(expense.amount)} />
           <Stat
             label={t('expense.payers')}
             value={fmt.list(expense.payers.map(p => nameOf(p.participantId)))}
           />
-        </dl>
+        </div>
         {expense.payers.length > 1 ? (
           <ul className="m-0 mt-3 flex list-none flex-col gap-1 p-0 text-sm">
             {expense.payers.map(payer => (

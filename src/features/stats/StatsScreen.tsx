@@ -247,7 +247,10 @@ export function StatsScreen() {
       ) : (
         <>
           <Card>
-            <dl className="m-0 grid grid-cols-2 gap-3">
+            {/* Un <div>, pas un <dl> : chaque `Stat` est déjà sa propre liste de
+                définitions, et un <dl> dans un <dl> est invalide (axe,
+                « definition-list »). */}
+            <div className="m-0 grid grid-cols-2 gap-3">
               <Stat label={t('stats.total')} value={money(total)} />
               <Stat
                 label={t('expenses.title')}
@@ -255,7 +258,7 @@ export function StatsScreen() {
                   count: validated.length,
                 })}
               />
-            </dl>
+            </div>
           </Card>
 
           <Card>
