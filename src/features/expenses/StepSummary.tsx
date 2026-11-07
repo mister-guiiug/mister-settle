@@ -93,13 +93,16 @@ export function StepSummary({
             category ? ` · ${categoryName(category, t)}` : ''
           }${subcategory ? ` › ${categoryName(subcategory, t)}` : ''}`}
         />
-        <dl className="m-0 grid grid-cols-2 gap-3">
+        {/* Un <div>, pas un <dl> : chaque `Stat` est déjà sa propre liste de
+            définitions, et un <dl> dans un <dl> est invalide (axe,
+            « definition-list »). */}
+        <div className="m-0 grid grid-cols-2 gap-3">
           <Stat label={t('wizard.total')} value={money(total)} />
           <Stat
             label={t('expense.payers')}
             value={fmt.list(payers.map(p => nameOf(p.participantId)))}
           />
-        </dl>
+        </div>
         {payers.length > 1 ? (
           <ul className="m-0 mt-3 flex list-none flex-col gap-1 p-0 text-sm">
             {payers.map(payer => (
