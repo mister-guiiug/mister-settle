@@ -7,6 +7,11 @@ Application PWA de la famille `miss-*` / `mister-*`, née du squelette
 sur [`@mister-guiiug/dev-pwa-config`](https://github.com/mister-guiiug/dev-pwa-config).
 Elle est servie sur <https://mister-guiiug.github.io/mister-settle/>.
 
+## Guides
+
+- [Partager les dépenses entre amis](https://mister-guiiug.github.io/mister-settle/partager-les-depenses-entre-amis.html)
+- [Partager les frais d'une colocation](https://mister-guiiug.github.io/mister-settle/partager-les-frais-colocation.html)
+
 ## Ce qu'elle fait
 
 - **Des espaces** — un voyage, une colocation, une famille — avec des
